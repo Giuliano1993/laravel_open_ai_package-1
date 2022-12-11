@@ -1,0 +1,32 @@
+{
+    "name": "pacificdev/laravel_open_ai",
+    "description": "A laravel package to interact with the Open AI REST API",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "ai",
+        "openai"
+    ],
+    "authors": [
+        {
+            "name": "Fabio Pacifici",
+            "email": "mail@fabiopacifici.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "PacificDev\\LaravelOpenAi\\": "src/",
+            "PacificDev\\LaravelOpenAi\\Services\\": "src/Services/",
+            "PacificDev\\LaravelOpenAi\\Views\\Components\\": "src/View/Components/"
+
+        }
+    },
+    "extra": {
+    "laravel": {
+        "providers": [
+            "PacificDev\\LaravelOpenAi\\OpenAiServiceProvider"
+        ]
+    }
+}
+}

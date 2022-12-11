@@ -1,0 +1,39 @@
+.panel {
+  width: 100%;
+  height: 50vh;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+
+  .container {
+    height: 100%;
+
+    .conversation {
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      overflow-y: auto;
+      height: calc(100% - 120px);
+
+      pre {
+        background-color: black;
+        padding: 1rem;
+        color: white;
+        border-radius: 1rem;
+        margin-top: 1rem;
+      }
+    }
+
+    #prompt {
+      width: 100%;
+      background: #0000;
+      color: white;
+      border: none;
+      border-bottom: 1px solid #808080;
+
+    }
+  }
+
+}
