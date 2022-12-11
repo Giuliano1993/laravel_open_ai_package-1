@@ -15,4 +15,11 @@ To use this package you need an api key that you can get by signing up on [opena
 
 `OPENAI_API_KEY=your_api_key_goes_here`
 
+## Components
+
+- chat ai component (blade) name x-pacificdev::ai-chat `<x-pacificdev::ai-chat text="{{$text}}" url="{{ route('ai.complete')}}" />`
+
 ## Usage
+
+## Publish package files
+
