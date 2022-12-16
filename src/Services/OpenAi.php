@@ -27,9 +27,11 @@ class OpenAi
      * @param string $user_prompt - the text input provided by the user
      * @param string $model - the model id from the models list https://beta.openai.com/docs/models
      */
-    public function text_complete($istructions, string $user_prompt, string $model='text-davinci-003')
+    public function text_complete($istructions, $user_prompt, string $model = 'text-davinci-003')
     {
-
+        if (is_null($user_prompt)) {
+            $user_prompt = 'write a greetings message as Yoda';
+        }
 
         if(is_null($istructions)){
             $istructions = config('openai.presets.completation');

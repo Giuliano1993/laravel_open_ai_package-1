@@ -17,6 +17,8 @@
     "autoload": {
         "psr-4": {
             "PacificDev\\LaravelOpenAi\\": "src/",
+            "PacificDev\\LaravelOpenAi\\Commands\\": "src/Commands/",
+            "PacificDev\\LaravelOpenAi\\Commands\\Presets\\Blade\\": "src/Commands/Presets/Blade",
             "PacificDev\\LaravelOpenAi\\Services\\": "src/Services/",
             "PacificDev\\LaravelOpenAi\\Views\\Components\\": "src/View/Components/"
 

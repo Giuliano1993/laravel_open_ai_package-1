@@ -44,6 +44,13 @@ class OpenAiServiceProvider extends ServiceProvider
             $this->append_to_file($env_file_path, 'OPENAI_API_KEY=your_api_key_goes_here');
         }
 
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \PacificDev\LaravelOpenAi\Commands\Ai::class,
+            ]);
+        }
+
+
         // TODO:? publish vendor assets
 
         // TODO: when assets are published we should make sure the css or scss folders exists.

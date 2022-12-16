@@ -5,7 +5,7 @@ namespace PacificDev\LaravelOpenAi\Views\Components;
 use Illuminate\View\Component;
 
 
-class AiChat extends Component
+class AiAssistant extends Component
 {
 
   public $url;
@@ -28,6 +28,6 @@ class AiChat extends Component
    */
   public function render()
   {
-    return view('pacificdev::ai-chat');
+    return view('pacificdev::ai-assistant');
   }
 }
