@@ -4,6 +4,7 @@ namespace PacificDev\LaravelOpenAi\Services;
 
 use Illuminate\Support\Facades\Http;
 use Exception;
+
 class OpenAi
 {
 
@@ -33,7 +34,7 @@ class OpenAi
             $user_prompt = 'write a greetings message as Yoda';
         }
 
-        if(is_null($istructions)){
+        if (is_null($istructions)) {
             $istructions = config('openai.presets.completation');
         }
         $full_prompt = $istructions . trim($user_prompt) . "\n\nAI: ";
@@ -42,12 +43,12 @@ class OpenAi
             //code...
 
             $r = Http::withToken(config('openai.api_key'))
-                ->post(config('openai.endpoints.completation'),
+                ->post(
+                    config('openai.endpoints.completation'),
                     [
                         'prompt' => $full_prompt,
                         'model' => $model,
-                        "max_tokens" => 600,
-                        'echo'=> true,
+                    "max_tokens" => 600,
                         'stop' => ["\nMe: ", "\nAI: "]
                     ]
                 );
@@ -94,8 +95,4 @@ class OpenAi
      * Guide: https://beta.openai.com/docs/guides/images
      *
      */
-
-
-
-
 }
