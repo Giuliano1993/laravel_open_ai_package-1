@@ -53,8 +53,19 @@ class OpenAi
                     ]
                 );
 
-            //dd($r->body());
-            return json_decode($r->body(), true)['choices'][0]['text'] . "\n\nMe: ";
+            /* TODO: Need to manage the error better. When inserting an incorrect api key the core returns the stack trace referring to the choices key being null. */
+            if ($r->successful()) {
+                //dd(json_decode($r->body(), true));
+                // retunr the response
+                return json_decode($r->body(), true)['choices'][0]['text'];
+            }
+
+            $r->onError(function ($error) {
+                $error_array = json_decode($error->body(), true);
+                //var_dump($error_array['error']['message']);
+                die($error_array['error']['message']);
+            });
+
         } catch (Exception $e) {
             return $e;
         }

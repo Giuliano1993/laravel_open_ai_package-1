@@ -4,7 +4,6 @@ namespace PacificDev\LaravelOpenAi;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
-//use PacificDev\LaravelOpenAi\Views\Components\AiChat;
 use Illuminate\Support\Facades\File;
 
 class OpenAiServiceProvider extends ServiceProvider
