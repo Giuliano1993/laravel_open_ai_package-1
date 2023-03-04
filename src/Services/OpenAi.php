@@ -33,7 +33,7 @@ class OpenAi
             [
                 "model" => $model,
                 "messages" => $messages,
-                "max_tokens" => 2500,
+                "max_tokens" => 3500,
                 "temperature" => 0,
             ]
         );
