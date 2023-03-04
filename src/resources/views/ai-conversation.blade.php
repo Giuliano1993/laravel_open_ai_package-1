@@ -15,7 +15,7 @@
                     @endif
                 </div>
                 <div class="card-body">
-                    {!! $message->body !!}
+                    {{ $message->body }}
                 </div>
             </div>
 

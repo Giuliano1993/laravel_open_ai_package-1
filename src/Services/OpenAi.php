@@ -18,7 +18,37 @@ class OpenAi
         # code...
     }
 
-    /* TODO - Get all choices! now taking only one prediction from the choices array!  */
+    public function chat($content, $model = "gpt-3.5-turbo")
+    {
+        //dd(config("openai.presets.chat.assistant"));
+        if (is_null($content)) {
+            $messages = config("openai.presets.chat.assistant");
+        } else {
+            $preset = config("openai.presets.chat.assistant");
+            $role = 'user';
+            $messages = [...$preset, compact('role', 'content')];
+        }
+        $response = Http::withToken(config('openai.api_key'))->post(
+            config('openai.endpoints.chat.completations'),
+            [
+                "model" => $model,
+                "messages" => $messages,
+                "max_tokens" => 240,
+                "temperature" => 0,
+            ]
+        );
+
+        if ($response->successful()) {
+            $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
+            // return the response
+            return $answerText;
+        }
+
+        $response->onError(function ($error) {
+            return json_decode($error->body(), true)['error']['message'];
+        });
+    }
+
     /**
      * ### Makes requests to the Completation endpoint
      * Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
@@ -28,11 +58,8 @@ class OpenAi
      * @param string $user_prompt - the text input provided by the user
      * @param string $model - the model id from the models list https://beta.openai.com/docs/models
      */
-    public function text_complete($istructions, $user_prompt, string $model = 'text-davinci-003')
+    public function text_complete(string $istructions, $user_prompt = "List five php advanced topics", string $model = 'text-davinci-003')
     {
-        if (is_null($user_prompt)) {
-            $user_prompt = 'write a greetings message as Yoda';
-        }
 
         if (is_null($istructions)) {
             $istructions = config('openai.presets.completation');
@@ -40,7 +67,6 @@ class OpenAi
         $full_prompt = $istructions . trim($user_prompt) . "\n\nAI: ";
         //dd($istructions, $user_prompt, $full_prompt, $model);
         try {
-            //code...
 
             $r = Http::withToken(config('openai.api_key'))
                 ->post(
@@ -48,7 +74,8 @@ class OpenAi
                     [
                         'prompt' => $full_prompt,
                         'model' => $model,
-                    "max_tokens" => 600,
+                        "max_tokens" => 600,
+                        "temperature" => 0,
                         'stop' => ["\nMe: ", "\nAI: "]
                     ]
                 );
@@ -65,7 +92,6 @@ class OpenAi
                 //var_dump($error_array['error']['message']);
                 die($error_array['error']['message']);
             });
-
         } catch (Exception $e) {
             return $e;
         }
