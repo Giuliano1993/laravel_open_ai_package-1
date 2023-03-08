@@ -4,6 +4,7 @@ namespace PacificDev\LaravelOpenAi\Services;
 
 use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Support\Str;
 
 class OpenAi
 {
@@ -18,7 +19,7 @@ class OpenAi
         # code...
     }
 
-    public function chat($content, $model = "gpt-3.5-turbo")
+    public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo")
     {
         //dd(config("openai.presets.chat.assistant"));
         if (is_null($content)) {
@@ -34,7 +35,7 @@ class OpenAi
                 "model" => $model,
                 "messages" => $messages,
                 "max_tokens" => 3500,
-                "temperature" => 0,
+                "temperature" => $temperature,
             ]
         );
 
@@ -58,7 +59,7 @@ class OpenAi
      * @param string $user_prompt - the text input provided by the user
      * @param string $model - the model id from the models list https://beta.openai.com/docs/models
      */
-    public function text_complete(string $istructions, $user_prompt = "List five php advanced topics", string $model = 'text-davinci-003')
+    public function text_complete(string $istructions, $user_prompt = "List five php advanced topics", string $model = 'text-davinci-003', $temperature = 0, $max_tokens = 2500)
     {
 
         if (is_null($istructions)) {
@@ -74,8 +75,9 @@ class OpenAi
                     [
                         'prompt' => $full_prompt,
                         'model' => $model,
-                        "max_tokens" => 600,
-                        "temperature" => 0,
+                        "max_tokens" => $max_tokens,
+                        "temperature" => $temperature,
+                        "echo" => false,
                         'stop' => ["\nMe: ", "\nAI: "]
                     ]
                 );
@@ -115,6 +117,39 @@ class OpenAi
      *
      */
 
+    public function generateImages($prompt = 'Generate an image of a black cat')
+    {
+        // call the api endpoint
+
+        // handle the response and return the generated image
+        try {
+
+            $r = Http::withToken(config('openai.api_key'))
+                ->post(
+                    config('openai.endpoints.images.create'),
+                    [
+                        'prompt' => $prompt,
+                        "n" => 1,
+                        'size' => "512x512"
+                    ]
+                );
+
+            /* TODO: Need to manage the error better. When inserting an incorrect api key the core returns the stack trace referring to the choices key being null. */
+            if ($r->successful()) {
+                $full_url  = json_decode($r->body(), true)['data'][0]['url'];
+                // retunr the response
+                return $full_url;
+            }
+
+            $r->onError(function ($error) {
+                $error_array = json_decode($error->body(), true);
+                //var_dump($error_array['error']['message']);
+                die($error_array['error']['message']);
+            });
+        } catch (Exception $e) {
+            return $e;
+        }
+    }
 
     /** ### Makes requests to the endpoint IMAGES EDIT
      * Given a prompt and/or an input image, the model will generate a new image.
