@@ -4,6 +4,7 @@ namespace PacificDev\LaravelOpenAi\Services;
 
 use Illuminate\Support\Facades\Http;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class OpenAi
@@ -124,21 +125,25 @@ class OpenAi
         // handle the response and return the generated image
         try {
 
-            $r = Http::withToken(config('openai.api_key'))
+            $r = Http::withToken(config('openai.api_key'))->timeout(60)
                 ->post(
                     config('openai.endpoints.images.create'),
                     [
                         'prompt' => $prompt,
                         "n" => 1,
-                        'size' => "512x512"
+                        "size" => "512x512",
+                        "response_format" => 'b64_json'
                     ]
                 );
 
             /* TODO: Need to manage the error better. When inserting an incorrect api key the core returns the stack trace referring to the choices key being null. */
             if ($r->successful()) {
-                $full_url  = json_decode($r->body(), true)['data'][0]['url'];
+                //dd(json_decode($r->body(), true)['data']);
+                $image_b64  = json_decode($r->body(), true)['data'][0]['b64_json'];
+
                 // retunr the response
-                return $full_url;
+                $image = base64_decode($image_b64);
+                return $image;
             }
 
             $r->onError(function ($error) {
