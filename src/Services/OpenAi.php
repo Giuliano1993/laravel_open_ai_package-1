@@ -30,7 +30,7 @@ class OpenAi
             $role = 'user';
             $messages = [...$preset, compact('role', 'content')];
         }
-        $response = Http::withToken(config('openai.api_key'))->post(
+        $response = Http::withToken(config('openai.api_key'))->timeout(60)->post(
             config('openai.endpoints.chat.completations'),
             [
                 "model" => $model,
@@ -70,7 +70,7 @@ class OpenAi
         //dd($istructions, $user_prompt, $full_prompt, $model);
         try {
 
-            $r = Http::withToken(config('openai.api_key'))
+            $r = Http::withToken(config('openai.api_key'))->timeout(60)
                 ->post(
                     config('openai.endpoints.completation'),
                     [
