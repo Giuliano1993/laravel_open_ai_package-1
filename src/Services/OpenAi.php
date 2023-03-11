@@ -20,7 +20,7 @@ class OpenAi
         # code...
     }
 
-    public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo")
+    public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo", $max_tokens = 3500)
     {
         //dd(config("openai.presets.chat.assistant"));
         if (is_null($content)) {
@@ -35,7 +35,7 @@ class OpenAi
             [
                 "model" => $model,
                 "messages" => $messages,
-                "max_tokens" => 3500,
+                "max_tokens" => $max_tokens,
                 "temperature" => $temperature,
             ]
         );
