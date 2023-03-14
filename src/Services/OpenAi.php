@@ -22,6 +22,7 @@ class OpenAi
 
     public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo", $max_tokens = 3500)
     {
+        //dd($content);
         //dd(config("openai.presets.chat.assistant"));
         if (is_null($content)) {
             $messages = config("openai.presets.chat.assistant");
@@ -30,7 +31,8 @@ class OpenAi
             $role = 'user';
             $messages = [...$preset, compact('role', 'content')];
         }
-        $response = Http::withToken(config('openai.api_key'))->timeout(60)->post(
+        //dd($messages);
+        $response = Http::withToken(config('openai.api_key'))->timeout(90)->post(
             config('openai.endpoints.chat.completations'),
             [
                 "model" => $model,
@@ -39,16 +41,20 @@ class OpenAi
                 "temperature" => $temperature,
             ]
         );
-
         if ($response->successful()) {
             $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
             // return the response
             return $answerText;
         }
 
-        $response->onError(function ($error) {
-            return json_decode($error->body(), true)['error']['message'];
-        });
+        if ($response->failed()) {
+            if ($response->clientError()) {
+                return json_decode($response->body(), true)['error']['message'];
+            }
+            if ($response->serverError()) {
+                return json_decode($response->body(), true);
+            }
+        }
     }
 
     /**
