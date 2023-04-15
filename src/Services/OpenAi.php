@@ -9,18 +9,19 @@ use Illuminate\Support\Str;
 
 class OpenAi
 {
-
+    private $timeout = 90;
     public function get_models()
     {
-        # code...
+        #TODO: code...
+
     }
 
     public function get_model()
     {
-        # code...
+        # TODO: code...
     }
 
-    public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo", $max_tokens = 3500)
+    public function chat($content, $temperature = 0, $model = "gpt-3.5-turbo", $max_tokens = 2000)
     {
         //dd($content);
         //dd(config("openai.presets.chat.assistant"));
@@ -32,7 +33,7 @@ class OpenAi
             $messages = [...$preset, compact('role', 'content')];
         }
         //dd($messages);
-        $response = Http::withToken(config('openai.api_key'))->timeout(90)->post(
+        $response = Http::withToken(config('openai.api_key'))->timeout($this->timeout)->post(
             config('openai.endpoints.chat.completations'),
             [
                 "model" => $model,
@@ -41,6 +42,7 @@ class OpenAi
                 "temperature" => $temperature,
             ]
         );
+
         if ($response->successful()) {
             $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
             // return the response
@@ -76,7 +78,7 @@ class OpenAi
         //dd($istructions, $user_prompt, $full_prompt, $model);
         try {
 
-            $r = Http::withToken(config('openai.api_key'))->timeout(60)
+            $r = Http::withToken(config('openai.api_key'))->timeout($this->timeout)
                 ->post(
                     config('openai.endpoints.completation'),
                     [
@@ -131,7 +133,7 @@ class OpenAi
         // handle the response and return the generated image
         try {
 
-            $r = Http::withToken(config('openai.api_key'))->timeout(60)
+            $r = Http::withToken(config('openai.api_key'))->timeout($this->timeout)
                 ->post(
                     config('openai.endpoints.images.create'),
                     [
