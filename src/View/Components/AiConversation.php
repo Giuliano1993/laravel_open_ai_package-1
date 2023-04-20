@@ -11,10 +11,14 @@ class AiConversation extends Component
 
   public $messages;
 
-  public function __construct($messages)
+  public $git;
+
+  public function __construct($messages, $git)
   {
     $this->messages = $messages;
+    $this->git = $git;
   }
+
 
   /**
    * Get the view / contents that represent the component.
