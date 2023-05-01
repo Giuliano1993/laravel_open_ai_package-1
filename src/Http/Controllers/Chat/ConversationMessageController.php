@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Chat;
 
 use App\Http\Requests\StoreMessageRequest;
 use App\Models\Conversation;
@@ -8,6 +8,8 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use PacificDev\LaravelOpenAi\Services\OpenAi;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class ConversationMessageController extends Controller
 {

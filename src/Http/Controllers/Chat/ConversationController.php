@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Chat;
 
+use App\Http\Controllers\Controller;
+
 use App\Models\User;
 use App\Models\Conversation;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\StoreConversationRequest;
 use App\Http\Requests\UpdateConversationRequest;
-use App\Http\Controllers\Controller;
+
+use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
@@ -61,8 +65,9 @@ class ConversationController extends Controller
      * @param  \App\Models\Conversation  $conversation
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateConversationRequest $request, Conversation $conversation): RedirectResponse
+    public function update(UpdateConversationRequest $request, Conversation $conversation)
     {
+
 
         $conversation->update($request->validated());
         return redirect()->back()->with('message', 'Conversation Updated.');
