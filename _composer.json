@@ -21,14 +21,22 @@
             "PacificDev\\LaravelOpenAi\\Commands\\Presets\\Blade\\": "src/Commands/Presets/Blade",
             "PacificDev\\LaravelOpenAi\\Services\\": "src/Services/",
             "PacificDev\\LaravelOpenAi\\Views\\Components\\": "src/View/Components/"
-
         }
     },
     "extra": {
-    "laravel": {
-        "providers": [
-            "PacificDev\\LaravelOpenAi\\OpenAiServiceProvider"
-        ]
+        "laravel": {
+            "providers": [
+                "PacificDev\\LaravelOpenAi\\OpenAiServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "pacificdev/laravel_9_preset": "^1.1.1"
+    },
+    "require-dev": {
+        "laravel/breeze": "^1.16",
+        "mockery/mockery": "^1.5",
+        "pestphp/pest": "^1.23",
+        "phpunit/phpunit": "^9.5.10"
     }
-}
 }

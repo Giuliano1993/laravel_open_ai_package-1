@@ -1,178 +1,15 @@
- <!-- User prompt -->
-
- <div class="prompt-wrapper h-100" x-data="
-        {
-            processing: false,
-            can_talk: true,
-            recognition: null,
-            selectedPreset: '',
-            presets: [
-            {
-                label: 'Default',
-                options: [
-                    {text: 'Free Writing', value: ''}
-                ]
-            },
-            {
-                label: 'Tutorial',
-                options: [
-                    {text: 'Table Of Contents', value: 'Complete the table of contents for my new [topic] for [audience] crash course. \n - What is [topic] \n - First Steps \n - Data Types \n - Functions \n '},
-                    {text: 'Example TOC', value: 'Complete the table of contents for my new PHP for Intermediate Developers crash course. \n - What is PHP today \n - First Steps \n - Data Types \n - Functions \n '},
-                    {text: 'Complete Chapter', value: 'Complete chapter [copy chapter] in [language]: \n '},
-                    {text: 'Example', value: 'Complete chapters in PHP. \nIntroduction:\n- What is PHP today\nFirst Steps\n- Installing PHP\n- Setting up a development environment\n- Basic syntax'}
-                ]
-            },
-            {
-                label: 'Code',
-                options: [
-                    {text: 'Translate', value: 'Translate to [language] code. \nThe software must ask to the user to insert a number and return the sum of all inserted numbers'},
-                    {text: 'Explain', value: 'Explain [topic] in [language] with code blocks.'},
-                    {text: 'Review', value: 'Review this code.'},
-                    {text: 'Refactor Simple', value: 'Refactor this code. \n\`\`\`language \n\`\`\`' },
-                    {text: 'Refactor', value: 'Refactor this code following [convention] conventions.'},
-                    {text: 'Refactor & Improve', value: 'Refactor this code and improve it using [language] [version] features.'},
-                    {text: 'Complete', value: 'Complete the following [language] code.\n \`\`\`language \n [your code here] \n\`\`\`'},
-                ]
-            },
-            {
-                label: 'Documents',
-                options: [
-                    {text: 'Generate', value: 'Generate a document draft about [topic]:\n'},
-                    {text: 'Proposal', value: 'Write a proposal for [client] about [project]:\n '},
-                ]
-            },
-            {
-                label: 'Social',
-                options: [
-                    {text: 'Twitter', value: 'Write a tween [topic]'},
-                    {text: 'Linkedin', value: 'Write a Linkedin Post about [topic] for [audience]: \n '},
-                    {text: 'Istagram', value: 'Write a caption for Istagram: \n '},
-
-                ]
-            }],
-            submitChatPrompt(e) {
-                e.preventDefault()
-                //console.log(e);
-                // Hide the processing form and button
-                this.processing = !this.processing
-                // Submit the form
-                document.getElementById('chat-form').submit()
-                // Select the loading icon
-                const loadingIcon = document.querySelector('.icon.loading')
-                // Toggle the d-none class
-                loadingIcon.classList.toggle('d-none')
-                // animate the icon
-                loadingIcon.animate([{
-                        opacity: '0.5'
-                    },
-                    {
-                        opacifiy: '1'
-                    }
-                ], {
-                    duration: 1000,
-                    iterations: Infinity
-                })
-
-            },
-            start_talking() {
-                this.can_talk = !this.can_talk;
-                /* Create a new instance of the SpeechRecognition class */
-               
-                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-               
-                    this.recognition = 'SpeechRecognition' in window ? new SpeechRecognition() : new webkitSpeechRecognition() ;
-                    console.log(this.recognition)
-                    // Keeps the mic open and listen until muted
-                    this.recognition.continuous = true;
-                    this.recognition.interimResults = true;
-                    this.recognition.lang = ['it-IT', 'en-US']
-                    // start the this.recognition
-                    console.info('Start voice recognition')
-                    this.recognition.start();
-
-                    // select the prompt area
-                    const outputDiv = document.querySelector('#prompt');
-                    //Listen for incoming results and insert them into the prompt
-                    this.recognition.onresult = function(event) {
-                        const transcript = Array.from(event.results)
-                            .map(result => result[0].transcript)
-                            .join('');
-                        outputDiv.textContent = transcript;
-                    }
-                 /*    this.recognition.addEventListener('result', (event) => {
-                        const transcript = Array.from(event.results)
-                            .map(result => result[0].transcript)
-                            .join('');
-                        outputDiv.textContent = transcript;
-                    }); */
-
-                    this.recognition.onerror = (event) => {
-                        console.error(event.error);
-                    }; 
-                } else {
-                    console.log('Speech Recognition not supported')
-                }
-
-            },
-            stop_talking() { 
-                this.can_talk = !this.can_talk;
-                if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-                    console.info('Voice recognition stopped')
-                    // stop recognition
-                    this.recognition.stop();
-                } 
-            }
-
-        }
-    ">
+ <div class="prompt-wrapper h-100" x-data="prompt_data">
      <div class="toolbar d-flex align-items-end justify-content-between justify-content-lg-center py-2 px-1 border-top border-secondary gap-2">
          @if (Route::has('admin.conversations.index'))
-         <a class="btn text-white" href="{{url()->previous()}}" title="{{__('Return back')}}">
-             @include('partials.icons.back')
+         <a class="btn text-white" href="{{ route('admin.conversations.new')}} ">
+             @include('partials.icons.plus')
+             <div class="fs_sm text-uppercase">{{__('new')}}</div>
          </a>
          <a href="{{route('admin.conversations.index')}}" class="btn text-white">
              @include('partials.icons.list')
              <div class="fs_sm text-uppercase">{{__('Chat')}}</div>
          </a>
          @endif
-         <!-- Button trigger modal -->
-         <button type="button" class="btn text-white" data-bs-toggle="modal" data-bs-target="#chat_settings_modal">
-             <div class="icon d-flex flex-column align-items-center">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
-                     <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
-                 </svg>
-                 <span class="text-uppercase fs_sm">Settings</span>
-             </div>
-         </button>
-
-         <!-- Modal -->
-         <div class="modal fade" id="chat_settings_modal" tabindex="-1" role="dialog" aria-labelledby="chatSettings" aria-hidden="true">
-             <div class="modal-dialog modal-lg" role="document">
-                 <div class="modal-content bg-secondary">
-                     <div class="modal-header">
-                         <h5 class="modal-title" id="chatSettings">Chat Settings</h5>
-                         <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
-
-                     </div>
-                     <div class="modal-body">
-                         <div class="mb-3">
-                             <label for="prompt-preset">Assistant Presets</label>
-                             <select name="prompt-preset" id="prompt-preset" class="form-control" x-model='selectedPreset'>
-                                 <template x-for="(preset, i) in presets" :key="i">
-                                     <optgroup :label="preset.label">
-                                         <template x-for="(option, i) in preset.options" :key="i">
-                                             <option :value="option.value" x-text="option.text"></option>
-                                         </template>
-                                     </optgroup>
-                                 </template>
-                             </select>
-                         </div>
-                         @include('partials.chat.settings')
-                     </div>
-
-                 </div>
-             </div>
-         </div>
 
          <button form="chat-form" title="Send Message" class="btn text-white" type="submit" x-show="!processing" @click.prevent="submitChatPrompt($event)">
              <div class="icon d-flex flex-column align-items-center">
@@ -213,12 +50,16 @@
 
              </button>
          </div>
-     </div>
-     <textarea form="chat-form" class="form-control rounded-0 h-100" name="prompt" id="prompt" placeholder="Me: " x-model="selectedPreset"></textarea>
+         @include('partials.chat.offcanvas-settings')
 
+     </div>
+
+     <!-- Prompt -->
+     <textarea form="chat-form" class="form-control rounded-0 h-100 bg-secondary text-muted" name="prompt" id="prompt" placeholder="Me: " x-model="selectedPreset"></textarea>
      <form id="chat-form" method="POST" action="{{ $url }}" x-show="!processing">
          @csrf
      </form>
+     <!-- /Prompt -->
  </div>
 
  <!-- /Chat Form -->
@@ -227,14 +68,194 @@
          resize: none;
          height: 50px;
          max-height: 50vh;
+         border: none;
      }
  </style>
 
  <script>
+     document.addEventListener('alpine:init', () => {
+
+         Alpine.data('prompt_data', () => ({
+             processing: false,
+             can_talk: true,
+             recognition: null,
+             selectedPreset: '',
+             presets: [{
+                     label: 'Default',
+                     options: [{
+                         text: 'Free Writing',
+                         value: ''
+                     }]
+                 },
+                 {
+                     label: 'Tutorial',
+                     options: [{
+                             text: 'Table Of Contents',
+                             value: 'Complete the table of contents for my new [topic] for [audience] crash course. \n - What is [topic] \n - First Steps \n - Data Types \n - Functions \n '
+                         },
+                         {
+                             text: 'Example TOC',
+                             value: 'Complete the table of contents for my new PHP for Intermediate Developers crash course. \n - What is PHP today \n - First Steps \n - Data Types \n - Functions \n '
+                         },
+                         {
+                             text: 'Complete Chapter',
+                             value: 'Complete chapter [copy chapter] in [language]: \n '
+                         },
+                         {
+                             text: 'Example',
+                             value: 'Complete chapters in PHP. \nIntroduction:\n- What is PHP today\nFirst Steps\n- Installing PHP\n- Setting up a development environment\n- Basic syntax'
+                         }
+                     ]
+                 },
+                 {
+                     label: 'Code',
+                     options: [{
+                             text: 'Translate',
+                             value: 'Translate to [language] code. \nThe software must ask to the user to insert a number and return the sum of all inserted numbers'
+                         },
+                         {
+                             text: 'Explain',
+                             value: 'Explain [topic] in [language] with code blocks.'
+                         },
+                         {
+                             text: 'Review',
+                             value: 'Review this code.'
+                         },
+                         {
+                             text: 'Refactor Simple',
+                             value: 'Refactor this code. \n\`\`\`language \n\`\`\`'
+                         },
+                         {
+                             text: 'Refactor',
+                             value: 'Refactor this code following [convention] conventions.'
+                         },
+                         {
+                             text: 'Refactor & Improve',
+                             value: 'Refactor this code and improve it using [language] [version] features.'
+                         },
+                         {
+                             text: 'Complete',
+                             value: 'Complete the following [language] code.\n \`\`\`language \n [your code here] \n\`\`\`'
+                         },
+                     ]
+                 },
+                 {
+                     label: 'Documents',
+                     options: [{
+                             text: 'Generate',
+                             value: 'Generate a document draft about [topic]:\n'
+                         },
+                         {
+                             text: 'Proposal',
+                             value: 'Write a proposal for [client] about [project]:\n '
+                         },
+                     ]
+                 },
+                 {
+                     label: 'Social',
+                     options: [{
+                             text: 'Twitter',
+                             value: 'Write a tween [topic]'
+                         },
+                         {
+                             text: 'Linkedin',
+                             value: 'Write a Linkedin Post about [topic] for [audience]: \n '
+                         },
+                         {
+                             text: 'Istagram',
+                             value: 'Write a caption for Istagram: \n '
+                         },
+
+                     ]
+                 }
+             ],
+             submitChatPrompt(e) {
+                 e.preventDefault()
+                 //console.log(e);
+                 // Hide the processing form and button
+                 this.processing = !this.processing
+                 // Submit the form
+                 document.getElementById('chat-form').submit()
+                 // Select the loading icon
+                 const loadingIcon = document.querySelector('.icon.loading')
+                 // Toggle the d-none class
+                 loadingIcon.classList.toggle('d-none')
+                 // animate the icon
+                 loadingIcon.animate([{
+                         opacity: '0.5'
+                     },
+                     {
+                         opacifiy: '1'
+                     }
+                 ], {
+                     duration: 1000,
+                     iterations: Infinity
+                 })
+
+             },
+             start_talking() {
+                 this.can_talk = !this.can_talk;
+                 /* Create a new instance of the SpeechRecognition class */
+
+                 if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+
+                     this.recognition = 'SpeechRecognition' in window ? new SpeechRecognition() : new webkitSpeechRecognition();
+                     console.log(this.recognition)
+                     // Keeps the mic open and listen until muted
+                     this.recognition.continuous = true;
+                     this.recognition.interimResults = true;
+                     this.recognition.lang = ['it-IT', 'en-US']
+                     // start the this.recognition
+                     console.info('Start voice recognition')
+                     this.recognition.start();
+
+                     // select the prompt area
+                     const outputDiv = document.querySelector('#prompt');
+                     //Listen for incoming results and insert them into the prompt
+                     this.recognition.onresult = function(event) {
+                         const transcript = Array.from(event.results)
+                             .map(result => result[0].transcript)
+                             .join('');
+                         outputDiv.textContent = transcript;
+                     }
+                     /*    this.recognition.addEventListener('result', (event) => {
+                            const transcript = Array.from(event.results)
+                                .map(result => result[0].transcript)
+                                .join('');
+                            outputDiv.textContent = transcript;
+                        }); */
+
+                     this.recognition.onerror = (event) => {
+                         console.error(event.error);
+                     };
+                 } else {
+                     console.log('Speech Recognition not supported')
+                 }
+
+             },
+             stop_talking() {
+                 this.can_talk = !this.can_talk;
+                 if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                     console.info('Voice recognition stopped')
+                     // stop recognition
+                     this.recognition.stop();
+                 }
+             }
+
+         }))
+     })
+ </script>
+
+ <script>
+     /*
+     TODO:
+    Refactor this code, use nextTick
+    https://alpinejs.dev/magics/nextTick
+    */
      window.onload = function() {
 
          const conversationEl = document.querySelector('.conversation');
-         console.log(conversationEl);
+         //console.log(conversationEl);
          conversationEl.scrollBy(0, conversationEl.scrollHeight)
      }
 

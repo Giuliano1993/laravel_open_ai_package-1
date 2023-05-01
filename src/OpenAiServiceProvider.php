@@ -22,14 +22,15 @@ class OpenAiServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         // load views
         $this->loadViewsFrom(__DIR__ . '/resources/views', 'pacificdev');
         // load components
         Blade::componentNamespace('PacificDev\\LaravelOpenAi\\Views\\Components', 'pacificdev');
 
-        /* Check if the route file exists */
+        // Copy Routes
+
         if (!File::exists(base_path('routes/ai-endpoints.php'))) {
             // Add the routes file
             File::copy(__DIR__ . '/routes/ai-endpoints.php', base_path('routes/ai-endpoints.php'));
@@ -42,6 +43,37 @@ class OpenAiServiceProvider extends ServiceProvider
             $env_file_path =  '.env';
             $this->append_to_file($env_file_path, 'OPENAI_API_KEY=your_api_key_goes_here');
         }
+
+        if (!File::exists(base_path('routes/git-endpoints.php'))) {
+            // Add the routes file
+            File::copy(__DIR__ . '/routes/git-endpoints.php', base_path('routes/git-endpoints.php'));
+
+            // Append at the end of the web.php file our git-endpoints.php require __DIR__ . '/git-endpoints.php'
+            $web_php_file = 'routes/web.php';
+            $this->append_to_file($web_php_file, "require __DIR__ . '/git-endpoints.php';");
+
+            // Append the OPEN_API_KEY to the .env file
+            $env_file_path =  '.env';
+            $this->append_to_file($env_file_path, 'BITBUCKET_KEY=BIT_BUCKET_KEY_HERE');
+            $this->append_to_file($env_file_path, 'BITBUCKET_SECRET=SECRET_HERE');
+        }
+
+        // Copy models
+        File::copy(__DIR__ . '/Models/Conversation.php', base_path('app/Models/Conversation.php'));
+        File::copy(__DIR__ . '/Models/GitProvider.php', base_path('app/Models/GitProvider.php'));
+        File::copy(__DIR__ . '/Models/Message.php', base_path('app/Models/Message.php'));
+        File::copy(__DIR__ . '/Models/User.php', base_path('app/Models/User.php'));
+
+        // Copy controllers
+        File::copy(__DIR__ . '/Http/Controllers/Chat/ConversationController.php', base_path('app/Http/Controllers/Chat/ConversationController.php'));
+        File::copy(__DIR__ . '/Http/Controllers/Chat/ConversationMessageController.php', base_path('app/Http/Controllers/Chat/ConversationMessageController.php'));
+        File::copy(__DIR__ . '/Http/Controllers/Git/GitController.php', base_path('app/Http/Controllers/Git/GitController.php'));
+
+
+        // load migrations
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+
+
 
         if ($this->app->runningInConsole()) {
             $this->commands([
