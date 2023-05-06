@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('/conversations/{conversation}/messages', [ConversationMessageController::class, 'store'])->name('ai.complete'); //x
 
     Route::post('/conversations/{conversation}/share', [ConversationController::class, 'share'])->name('conversations.share'); //x
+    Route::post('/conversations/{conversation}/switchAccess/{user}', [ConversationController::class, 'switchWriteAcess'])->name('conversations.switchWriteAcess'); //x
     Route::delete('/conversations/{conversation}/unshare/{user}', [ConversationController::class, 'unshare'])->name('conversations.unshare'); //x
     Route::patch('/conversations/{conversation}/messages/{message}/star', [ConversationMessageController::class, 'star'])->name('messages.star'); //x
 });

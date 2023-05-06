@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Chat;
 
-use App\Http\Controllers\Controller;
-
 use App\Models\User;
-use App\Models\Conversation;
+
 use App\Models\Message;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+
 use App\Http\Requests\StoreConversationRequest;
 use App\Http\Requests\UpdateConversationRequest;
-
-use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
@@ -113,5 +114,14 @@ class ConversationController extends Controller
     {
         $conversation->sharedWithUsers()->detach($user);
         return redirect()->back()->with('message', "User $user->email can no longer see this conversation.");
+    }
+
+    public function switchWriteAcess(Conversation $conversation, User $user): RedirectResponse
+    {
+        $sharedRow = $conversation->sharedWithUsers()->where('user_id',$user->id)->first()->pivot;
+        $canWrite = !$sharedRow->write_access;
+        $conversation->sharedWithUsers()->updateExistingPivot($user->id,['write_access'=>$canWrite]);
+        $message = $canWrite ? 'has now writing access.' : 'has no more write access.';
+        return redirect()->back()->with('message', "User $user->email ".$message);
     }
 }

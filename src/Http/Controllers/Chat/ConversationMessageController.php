@@ -47,7 +47,7 @@ class ConversationMessageController extends Controller
             $isShared = $conversation->user_id !== Auth::id();
             $hasWriteAccess = false;
             if($isShared){
-                $sharedRow = DB::table('conversations_users')->where('user_id',Auth::id())->where('conversation_id',$conversation->id)->first();
+                $sharedRow = $conversation->sharedWithUsers()->where('user_id', Auth::id())->first()->pivot;
                 $hasWriteAccess = $sharedRow->write_access;
             }
             return view('admin.conversations.show', compact('messages', 'url', 'conversation', 'git_providers', 'isShared','hasWriteAccess'));
