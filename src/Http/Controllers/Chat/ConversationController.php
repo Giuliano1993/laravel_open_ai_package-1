@@ -44,6 +44,7 @@ class ConversationController extends Controller
 
         $sharedConversations = $user->sharedConversations()->orderByDesc('id')->paginate(12);
 
+
         $conversationsSharedWithOthers = Conversation::where('user_id',$user->id)
         ->whereIn('id', function($query) use ($user){
             $query->select('conversation_id')->from('conversations_users')->whereIn('conversation_id', function($query) use ($user){
@@ -53,6 +54,7 @@ class ConversationController extends Controller
 
 
         return view('admin.conversations.index', compact('conversations', 'starredMessages', 'sharedConversations','conversationsSharedWithOthers'));
+
     }
 
     /**
@@ -97,15 +99,19 @@ class ConversationController extends Controller
     public function share(Conversation $conversation, Request $request): RedirectResponse
     {
         $mail = $request->mail;
+
         $writeAccess = $request->writeAccess;
+
         $user = User::firstWhere('email', $mail);
 
 
         if (!$user) {
             return redirect()->back()->with('message', "Impossible to share: the user does not exists.");
         }
+
         //TODO: add check if conversation is already shared with the user
         $conversation->sharedWithUsers()->attach($user,['write_access'=>$writeAccess]);
+
         return redirect()->back()->with('message', "Shared with $mail.");
     }
 
