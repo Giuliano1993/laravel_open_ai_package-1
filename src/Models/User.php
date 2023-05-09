@@ -62,7 +62,9 @@ class User extends Authenticatable
     }
 
     public function sharedConversations(){
-        return $this->belongsToMany(Conversation::class,'conversations_users','user_id','conversation_id');
+
+        return $this->belongsToMany(Conversation::class,'conversations_users','user_id','conversation_id')->withPivot('write_access');
+
     }
 
     public function count_messages()

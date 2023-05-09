@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Chat;
 
-use App\Http\Requests\StoreMessageRequest;
-use App\Models\Conversation;
+
 use App\Models\Message;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use PacificDev\LaravelOpenAi\Services\OpenAi;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreMessageRequest;
+use PacificDev\LaravelOpenAi\Services\OpenAi;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+
 
 class ConversationMessageController extends Controller
 {
@@ -44,7 +47,14 @@ class ConversationMessageController extends Controller
             $git_providers = Auth::user()->gitProviders;
             //dd($git_providers);
             $isShared = $conversation->user_id !== Auth::id();
-            return view('admin.conversations.show', compact('messages', 'url', 'conversation', 'git_providers', 'isShared'));
+
+            $hasWriteAccess = false;
+            if($isShared){
+                $sharedRow = $conversation->sharedWithUsers()->where('user_id', Auth::id())->first()->pivot;
+                $hasWriteAccess = $sharedRow->write_access;
+            }
+            return view('admin.conversations.show', compact('messages', 'url', 'conversation', 'git_providers', 'isShared','hasWriteAccess'));
+
         } else {
             abort('403', 'You can access only your conversations!');
         }
