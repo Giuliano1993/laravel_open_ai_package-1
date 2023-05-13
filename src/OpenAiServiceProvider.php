@@ -135,6 +135,7 @@ class OpenAiServiceProvider extends ServiceProvider
     private function loadTests()
     {
         File::copy(__DIR__ . '/tests/Feature/Chat/ConversationsTest.php', base_path('tests/Feature/Chat/ConversationsTest.php'));
+        File::copy(__DIR__ . '/tests/Feature/Commands/AssistantCommandTest.php', base_path('tests/Feature/Commands/AssistantCommandTest.php'));
     }
 
     private function append_to_file($file, string $contents)
