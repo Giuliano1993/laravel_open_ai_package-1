@@ -24,7 +24,9 @@ class Conversation extends Model
     }
 
     public function sharedWithUsers(){
-        return $this->belongsToMany(User::class,'conversations_users','conversation_id','user_id');
+
+        return $this->belongsToMany(User::class,'conversations_users','conversation_id','user_id')->withPivot('write_access');
+
     }
 
     /**
