@@ -103,6 +103,11 @@
                                         </small>
                                         <small class="text-danger" x-show="!selected_repo">Select a repository from the list</small>
                                     </div>
+                                    <div class="alert alert-info" role="alert" x-show="issue_error_message">
+                                        <strong>Ops!</strong>
+                                        <span x-text="issue_error_message"></span>
+                                    </div>
+
                                     <div class="mb-3">
                                         <label class="text-white" for="issue">Issue description</label>
                                         <input name="issue" id="issue" type="text" class="form-control" placeholder="Issue name here" x-model="issue_title">
