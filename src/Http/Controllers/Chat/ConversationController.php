@@ -99,6 +99,13 @@ class ConversationController extends Controller
 
     public function share(Conversation $conversation, Request $request): RedirectResponse
     {
+
+        //TODO refactor the checks
+        $loggedUser = Auth::user();
+        if($conversation->user_id != $loggedUser->id){
+            return redirect()->back()->with('message', "Impossible to share: the specified conversation does not belong to you.");
+        }
+
         $mail = $request->mail;
 
         $writeAccess = $request->writeAccess;
@@ -111,7 +118,7 @@ class ConversationController extends Controller
         }
 
         //TODO: add check if conversation is already shared with the user
-        $alreadyShared = $conversation->sharedWithUsers()->where('user_id',$user->id)->first()->pivot;
+        $alreadyShared = $conversation->sharedWithUsers()->where('user_id',$user->id)->first();
         if($alreadyShared){
             return redirect()->back()->with('message', "Conversation already shared with this user");
         }
