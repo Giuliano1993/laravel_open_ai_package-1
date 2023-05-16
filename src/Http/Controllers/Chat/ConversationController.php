@@ -111,6 +111,10 @@ class ConversationController extends Controller
         }
 
         //TODO: add check if conversation is already shared with the user
+        $alreadyShared = $conversation->sharedWithUsers()->where('user_id',$user->id)->first()->pivot;
+        if($alreadyShared){
+            return redirect()->back()->with('message', "Conversation already shared with this user");
+        }
         $conversation->sharedWithUsers()->attach($user,['write_access'=>$writeAccess]);
 
         return redirect()->back()->with('message', "Shared with $mail.");
