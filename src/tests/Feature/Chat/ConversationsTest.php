@@ -128,3 +128,68 @@ it('can star message in a conversation', function () {
 
     $this->assertDatabaseHas('messages', ['id' => $message->id, 'has_star' => true]);
 })->group('chat');
+
+
+
+it('can share a conversation', function(){
+    $userSharer = User::factory()->create([
+        'email'=>'usersharer@mail.com'
+    ]);
+    $userReceiver = User::factory()->create([
+        'email'=>'userreceiver@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userSharer->id]);
+    //$message = Message::factory()->create(['status' => 'sent', 'body' => 'Hi what is your name', 'conversation_id' => $conversation->id, 'has_star' => false]);
+    Auth::login($userSharer);
+    $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'userreceiver@mail.com',
+        'writeAccess'=>true
+    ]);
+
+    $this->assertDatabaseHas('conversations_users', ['conversation_id' => $conversation->id, 'user_id' => $userReceiver->id]);
+});
+
+
+it('cannot share someone elses conversation',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userConversationOwner  = User::factory()->create([
+        'email'=>'userConversationOwner@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userConversationOwner->id]);
+    Auth::login($loggedUser);
+    $this->get(route('admin.conversations.index'));
+    $response = $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'mailThirdPartUser@mail.com',
+        'writeAccess'=>true
+    ]);
+    $this->followRedirects($response)->assertSee('Impossible to share');
+
+});
+
+it('cannot share twice the conversation with a user',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userToShare  = User::factory()->create([
+        'email'=>'userConversationOwner@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $loggedUser->id]);
+    Auth::login($loggedUser);
+    $conversation->sharedWithUsers()->attach($userToShare,['write_access'=>true]);
+
+    $this->get(route('admin.conversations.index'));
+    $response = $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'userConversationOwner@mail.com',
+        'writeAccess'=>true
+    ]);
+
+    $this->followRedirects($response)->assertSee('Conversation already shared');
+
+});
+// next tests
+
+ // cant' write without writing access
