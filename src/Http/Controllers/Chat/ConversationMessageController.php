@@ -71,6 +71,10 @@ class ConversationMessageController extends Controller
     public function store(Conversation $conversation, StoreMessageRequest $request, OpenAi $ai): \Illuminate\Http\RedirectResponse | string
     {
 
+        $isSharedWithUser = $conversation->sharedWithUsers()->where('user_id',Auth::id())->first()?->pivot;
+        if(($conversation->user_id != Auth::id() && !$isSharedWithUser) || ($conversation->user_id != Auth::id() && !$isSharedWithUser->write_access)){
+            return redirect()->back()->with('message', 'You can\'t send message in this conversation');
+        }
         Message::create([
             'body' => $request['prompt'],
             'status' => 'sent',

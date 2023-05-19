@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use PacificDev\LaravelOpenAi\Services\OpenAi;
 
+
 uses(RefreshDatabase::class);
 
 
@@ -147,7 +148,7 @@ it('can share a conversation', function(){
     ]);
 
     $this->assertDatabaseHas('conversations_users', ['conversation_id' => $conversation->id, 'user_id' => $userReceiver->id]);
-});
+})->group('chat');
 
 
 it('cannot share someone elses conversation',function(){
@@ -167,7 +168,7 @@ it('cannot share someone elses conversation',function(){
     ]);
     $this->followRedirects($response)->assertSee('Impossible to share');
 
-});
+})->group('chat');
 
 it('cannot share twice the conversation with a user',function(){
     $loggedUser = User::factory()->create([
@@ -175,7 +176,7 @@ it('cannot share twice the conversation with a user',function(){
     ]);
 
     $userToShare  = User::factory()->create([
-        'email'=>'userConversationOwner@mail.com'
+        'email'=>'userToShare@mail.com'
     ]);
     $conversation = Conversation::factory()->create(['user_id' => $loggedUser->id]);
     Auth::login($loggedUser);
@@ -183,13 +184,36 @@ it('cannot share twice the conversation with a user',function(){
 
     $this->get(route('admin.conversations.index'));
     $response = $this->post(route('admin.conversations.share',[$conversation->id]),[
-        'mail'=>'userConversationOwner@mail.com',
+        'mail'=>'userToShare@mail.com',
         'writeAccess'=>true
-    ]);
+    ])->group('chat');
 
     $this->followRedirects($response)->assertSee('Conversation already shared');
 
 });
-// next tests
+
+it('cannot write on shared conversation without writing access',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userConversationOwner  = User::factory()->create([
+        'email'=>'userConversationOwner@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userConversationOwner->id]);
+    $conversation->sharedWithUsers()->attach($loggedUser,['write_access'=>false]);
+
+    Auth::login($loggedUser);
+    $this->get(route('admin.conversations.show', [$conversation->id]));
+    $response = $this->post(route('admin.ai.complete',[$conversation->id]),[
+        'prompt' => "test prompt",
+        'max_tokens' => 1000,
+        'temperature' => 0.5
+    ]);
+
+    $this->followRedirects($response)->assertSee("You can't send message in this conversation");
+
+
+})->group('chat');
 
  // cant' write without writing access
