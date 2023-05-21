@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use PacificDev\LaravelOpenAi\Services\OpenAi;
 
+
 uses(RefreshDatabase::class);
 
 
@@ -128,3 +129,91 @@ it('can star message in a conversation', function () {
 
     $this->assertDatabaseHas('messages', ['id' => $message->id, 'has_star' => true]);
 })->group('chat');
+
+
+
+it('can share a conversation', function(){
+    $userSharer = User::factory()->create([
+        'email'=>'usersharer@mail.com'
+    ]);
+    $userReceiver = User::factory()->create([
+        'email'=>'userreceiver@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userSharer->id]);
+    //$message = Message::factory()->create(['status' => 'sent', 'body' => 'Hi what is your name', 'conversation_id' => $conversation->id, 'has_star' => false]);
+    Auth::login($userSharer);
+    $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'userreceiver@mail.com',
+        'writeAccess'=>true
+    ]);
+
+    $this->assertDatabaseHas('conversations_users', ['conversation_id' => $conversation->id, 'user_id' => $userReceiver->id]);
+})->group('chat');
+
+
+it('cannot share someone elses conversation',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userConversationOwner  = User::factory()->create([
+        'email'=>'userConversationOwner@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userConversationOwner->id]);
+    Auth::login($loggedUser);
+    $this->get(route('admin.conversations.index'));
+    $response = $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'mailThirdPartUser@mail.com',
+        'writeAccess'=>true
+    ]);
+    $this->followRedirects($response)->assertSee('Impossible to share');
+
+})->group('chat');
+
+it('cannot share twice the conversation with a user',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userToShare  = User::factory()->create([
+        'email'=>'userToShare@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $loggedUser->id]);
+    Auth::login($loggedUser);
+    $conversation->sharedWithUsers()->attach($userToShare,['write_access'=>true]);
+
+    $this->get(route('admin.conversations.index'));
+    $response = $this->post(route('admin.conversations.share',[$conversation->id]),[
+        'mail'=>'userToShare@mail.com',
+        'writeAccess'=>true
+    ])->group('chat');
+
+    $this->followRedirects($response)->assertSee('Conversation already shared');
+
+});
+
+it('cannot write on shared conversation without writing access',function(){
+    $loggedUser = User::factory()->create([
+        'email'=>'loggedUser@mail.com'
+    ]);
+
+    $userConversationOwner  = User::factory()->create([
+        'email'=>'userConversationOwner@mail.com'
+    ]);
+    $conversation = Conversation::factory()->create(['user_id' => $userConversationOwner->id]);
+    $conversation->sharedWithUsers()->attach($loggedUser,['write_access'=>false]);
+
+    Auth::login($loggedUser);
+    $this->get(route('admin.conversations.show', [$conversation->id]));
+    $response = $this->post(route('admin.ai.complete',[$conversation->id]),[
+        'prompt' => "test prompt",
+        'max_tokens' => 1000,
+        'temperature' => 0.5
+    ]);
+
+    $this->followRedirects($response)->assertSee("You can't send message in this conversation");
+
+
+})->group('chat');
+
+ // cant' write without writing access

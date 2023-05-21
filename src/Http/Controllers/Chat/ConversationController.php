@@ -117,7 +117,6 @@ class ConversationController extends Controller
             return redirect()->back()->with('message', "Impossible to share: the user does not exists.");
         }
 
-        //TODO: add check if conversation is already shared with the user
         $alreadyShared = $conversation->sharedWithUsers()->where('user_id',$user->id)->first();
         if($alreadyShared){
             return redirect()->back()->with('message', "Conversation already shared with this user");
