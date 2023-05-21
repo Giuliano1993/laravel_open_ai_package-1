@@ -1,17 +1,70 @@
- <div class="prompt-wrapper h-100" x-data="prompt_data">
-     <div class="toolbar d-flex align-items-end justify-content-between justify-content-lg-center py-2 px-1 border-top border-secondary gap-2">
+ <div class="prompt-wrapper shadow " x-data="prompt_data">
+     <div class="top_toolbar position-absolute top-0 w-100" x-show="promptFocus">
+         <div class="d-flex justify-content-center align-items-center">
+             <button @click="insertBackticks" class="btn">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-code-slash" viewBox="0 0 16 16">
+                     <path d="M10.478 1.647a.5.5 0 1 0-.956-.294l-4 13a.5.5 0 0 0 .956.294l4-13zM4.854 4.146a.5.5 0 0 1 0 .708L1.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0zm6.292 0a.5.5 0 0 0 0 .708L14.293 8l-3.147 3.146a.5.5 0 0 0 .708.708l3.5-3.5a.5.5 0 0 0 0-.708l-3.5-3.5a.5.5 0 0 0-.708 0z" />
+                 </svg>
+             </button>
+             <div class="resize_textarea" @click="promptFocus = false">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-bar-down" viewBox="0 0 16 16">
+                     <path fill-rule="evenodd" d="M1 3.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zM8 6a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 .708-.708L7.5 12.293V6.5A.5.5 0 0 1 8 6z" />
+                 </svg>
+             </div>
+         </div>
+     </div>
+     <!-- Prompt -->
+     <textarea form="chat-form" name="prompt" id="prompt" class="form-control bg-dark border-top border-secondary text-muted" x-bind:class="{'ps-5' : !promptFocus}" placeholder="Me: " x-model="selectedPreset" x-on:focus="promptFocus = true" :style="promptFocus && { height: '50vh' }"></textarea>
+
+     <form id="chat-form" method="POST" action="{{ $url }}" x-show="!processing">
+         @csrf
+     </form>
+     <!-- /Prompt -->
+
+
+     <template x-if="!promptFocus">
+         <!-- New Conversation copy -->
+
+         <!-- /New Conversation -->
+
+         <div class="dropdown">
+             <button class="btn text-white position-absolute left-0 bottom-0 dropdown-toggle" type="button" id="newToggler" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                 @include('partials.icons.plus')
+             </button>
+             <div class="dropdown-menu" aria-labelledby="newToggler">
+
+                 <a class="dropdown-item" href="{{ route('admin.conversations.new')}} ">
+                     @include('partials.icons.plus')
+                     <span class="fs_sm text-uppercase">{{__('New Conversation')}}</span>
+                 </a>
+                 <button class="dropdown-item" x-on:click="document.getElementById('offcanvasFileUpload').classList.toggle('show'); showOffCanvas = true; promptFocus = true;">
+                     @include('partials.icons.plus')
+                     <span class="fs_sm text-uppercase">{{__('Upload File')}}</span>
+                 </button>
+
+             </div>
+         </div>
+     </template>
+
+     <div class="bg-dark toolbar align-items-end justify-content-between justify-content-lg-center py-2 px-1  gap-2" x-bind:class="{ 'd-flex': promptFocus, 'd-none': !promptFocus }">
          @if (Route::has('admin.conversations.index'))
+         <!-- New Conversation -->
          <a class="btn text-white" href="{{ route('admin.conversations.new')}} ">
              @include('partials.icons.plus')
              <div class="fs_sm text-uppercase">{{__('new')}}</div>
          </a>
+         <!-- /New Conversation -->
+
+         <!-- Conversations Page -->
          <a href="{{route('admin.conversations.index')}}" class="btn text-white">
              @include('partials.icons.list')
              <div class="fs_sm text-uppercase">{{__('Chat')}}</div>
          </a>
+         <!-- Conversations Page -->
          @endif
 
-         <button form="chat-form" title="Send Message" class="btn text-white" type="submit" x-show="!processing" @click.prevent="submitChatPrompt($event)">
+
+         <button form="chat-form" title="Send Message" class="btn text-white" type="submit" x-show="!processing" @click.prevent="submitChatPrompt($event)" tabindex="-1">
              <div class="icon d-flex flex-column align-items-center">
                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
                      <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
@@ -50,25 +103,65 @@
 
              </button>
          </div>
-         @include('partials.chat.offcanvas-settings')
 
+
+         <button class="btn text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFileUpload" aria-controls="offcanvasFileUpload">
+             <div class="icon d-flex flex-column align-items-center">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16">
+                     <path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z" />
+                     <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z" />
+                 </svg>
+                 <span class="text-uppercase fs_sm">{{__('File')}}</span>
+             </div>
+         </button>
+
+         <div class="offcanvas offcanvas-bottom" x-bind:class="{ 'show': showOffCanvas }" data-bs-backdrop="static" tabindex="-1" id="offcanvasFileUpload" aria-labelledby="staticBackdropLabel">
+             <div class="offcanvas-header">
+                 <h5 class="offcanvas-title" id="staticBackdropLabel">File upload</h5>
+                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" x-on:click="showOffCanvas = false"></button>
+             </div>
+             <div class="offcanvas-body">
+                 <div>
+                     Click the button to upload the content of a file into the propmt and let gpt help you.
+                     <input class="form-control" type="file" @change="handleFileUpload($event)">
+                 </div>
+             </div>
+         </div>
+
+
+         @include('partials.chat.offcanvas-settings')
      </div>
 
-     <!-- Prompt -->
-     <textarea form="chat-form" class="form-control rounded-0 h-100 bg-secondary text-muted" name="prompt" id="prompt" placeholder="Me: " x-model="selectedPreset"></textarea>
-     <form id="chat-form" method="POST" action="{{ $url }}" x-show="!processing">
-         @csrf
-     </form>
-     <!-- /Prompt -->
+
  </div>
 
  <!-- /Chat Form -->
  <style>
+     .prompt-wrapper {
+         position: fixed;
+         bottom: 40px;
+         left: 0px;
+         width: 100%;
+     }
+
+     @media screen and (min-width: 1200px) {
+         .prompt-wrapper {
+
+             bottom: 0px;
+
+         }
+     }
+
      #prompt {
          resize: none;
-         height: 50px;
-         max-height: 50vh;
          border: none;
+     }
+
+     .close_toolbar {
+         position: absolute;
+         bottom: 0;
+         right: 0;
+         z-index: 100;
      }
  </style>
 
@@ -80,6 +173,9 @@
              can_talk: true,
              recognition: null,
              selectedPreset: '',
+             showOffCanvas: false,
+             fileContent: '',
+             promptFocus: false,
              presets: [{
                      label: 'Default',
                      options: [{
@@ -240,6 +336,29 @@
                      // stop recognition
                      this.recognition.stop();
                  }
+             },
+             handleFileUpload(event) {
+                 const file = event.target.files[0];
+                 const reader = new FileReader();
+                 const self = this;
+                 reader.onload = () => {
+                     const fileContent = reader.result;
+                     console.log(fileContent);
+
+                     this.selectedPreset = fileContent;
+                 }
+
+                 reader.readAsText(file);
+             },
+             insertBackticks() {
+                 let textarea = document.getElementById('prompt');
+                 let start = textarea.selectionStart;
+                 let end = textarea.selectionEnd;
+                 let text = textarea.value;
+                 let newText = text.substring(0, start) + '\n```markdown\n\n' + text.substring(start, end) + '```' + text.substring(end);
+                 textarea.value = newText;
+                 textarea.selectionStart = start + 1;
+                 textarea.selectionEnd = end + 1;
              }
 
          }))
