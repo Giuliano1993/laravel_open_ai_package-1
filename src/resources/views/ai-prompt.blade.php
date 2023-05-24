@@ -1,5 +1,5 @@
- <div class="prompt-wrapper shadow " x-data="prompt_data">
-     <div class="top_toolbar position-absolute top-0 w-100" x-show="promptFocus">
+ <div class="prompt-wrapper shadow bg-dark border-top border-secondary text-muted" x-data="prompt_data">
+     <div class="top_toolbar w-100 mb-1" x-show="promptFocus">
          <div class="d-flex justify-content-center align-items-center">
              <button @click="insertBackticks" class="btn">
                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-code-slash" viewBox="0 0 16 16">
@@ -14,7 +14,7 @@
          </div>
      </div>
      <!-- Prompt -->
-     <textarea form="chat-form" name="prompt" id="prompt" class="form-control bg-dark border-top border-secondary text-muted" x-bind:class="{'ps-5' : !promptFocus}" placeholder="Me: " x-model="selectedPreset" x-on:focus="promptFocus = true" :style="promptFocus && { height: '50vh' }"></textarea>
+     <textarea form="chat-form" name="prompt" id="prompt" class="form-control" x-bind:class="{'ps-5' : !promptFocus}" placeholder="Me: " x-model="selectedPreset" x-on:focus="promptFocus = true" :style="promptFocus && { height: '50vh' }"></textarea>
 
      <form id="chat-form" method="POST" action="{{ $url }}" x-show="!processing">
          @csrf

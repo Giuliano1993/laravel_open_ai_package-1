@@ -33,12 +33,12 @@ abstract class GitRemoteProvider
         try {
             $response = $this->baseRequest($validatedData)->get($this->user_path);
         } catch (\Throwable $th) {
-            $message = 'Server Error!'.$th->getMessage();
+            $message = 'Server Error!' . $th->getMessage();
 
             return response()->json(
                 [
                     'success' => false,
-                    'error' => 'Server Ops!🙄 '.$message.' Failed to connect to '.ucfirst($validatedData['provider']).'.',
+                    'error' => 'Server Ops!🙄 ' . $message . ' Failed to connect to ' . ucfirst($validatedData['provider']) . '.',
                 ]
             );
         }
@@ -50,7 +50,7 @@ abstract class GitRemoteProvider
             return response()->json(
                 [
                     'success' => false,
-                    'error' => "Error, $errorMessage".' Failed to connect to '.ucfirst($validatedData['provider']).'.',
+                    'error' => "Error, $errorMessage" . ' Failed to connect to ' . ucfirst($validatedData['provider']) . '.',
                 ]
             );
         }
@@ -64,7 +64,7 @@ abstract class GitRemoteProvider
         return response()->json(
             [
                 'success' => true,
-                'message' => 'Connected to '.ucfirst($validatedData['provider']).' successfully.',
+                'message' => 'Connected to ' . ucfirst($validatedData['provider']) . ' successfully.',
             ]
         );
     }
@@ -97,7 +97,7 @@ abstract class GitRemoteProvider
         // Get the URL for the provider's repositories
         $repoUrl = $this->getProviderRepositoriesUrl($request);
 
-        if (! $repoUrl) {
+        if (!$repoUrl) {
             throw new Exception('Error Processing Request, missing Repositories URL', 1);
         }
         //dd($repoUrl);
@@ -121,7 +121,8 @@ abstract class GitRemoteProvider
     {
         // TODO: need to validate the input
         $provider_name = $request->input('git_provider');
-        $issue_body = Message::findOrFail($request->input('issue_body'))->body;
+        $message = Message::findOrFail($request->input('issue_body'));
+        $issue_body = $message->body;
 
         $provider_token = $this->getProviderToken($request, $provider_name);
 
@@ -134,6 +135,16 @@ abstract class GitRemoteProvider
 
         // submit a post request passing the payload
         $response = $this->handleProviderIssuesResponse($client, $request, $issue_body);
+        /* TODO: We should find out the issue url (by git provide) at this point (insead of in alpine) and return that only as part of the response
+        if there is an error then the response json should return an error instead of the whole response*/
+        $response_body = json_decode($response->getBody(), true);
+        //dd($response_body);
+        if (isset($response['html_url'])) {
+            $issue_url = $response_body['html_url'];
+            $message->is_issue = true;
+            $message->issue_url = $issue_url;
+            $message->save();
+        }
 
         return response()->json([
             'success' => true,
@@ -284,9 +295,9 @@ abstract class GitRemoteProvider
     {
         $request->session()->put(['git_providers' => Auth::user()->gitProviders]);
         // If the session is empty, the user either logged out and logged back in or never connected a git provider.
-        if (! session('git_providers')) {
+        if (!session('git_providers')) {
             // Check if there are git provider credentials in the db for the auth user.
-            if (! Auth::user()->gitProviders) {
+            if (!Auth::user()->gitProviders) {
                 return redirect()->route('admin.git.connect')->with('message', 'You need to connect a git provider account.');
             }
 

@@ -1,8 +1,23 @@
-<div class="conversation p-2">
+<div class="conversation p-2" x-data="{
+    onlyStarred: false,
+    filterMessages(){
+
+        this.onlyStarred = !this.onlyStarred;
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(message => {
+
+            if (message.getAttribute('data-message-starred') == 0 && this.onlyStarred){
+                message.style.display = 'none'
+            } else {
+                message.style.display = 'block'
+            }
+        })
+
+    }}">
     <!-- TODO: Copy this content back in the package files and refactor with multiple components or partials -->
     <div class="row flex-column g-4">
         @forelse( $messages as $message)
-        <div class="col">
+        <div class="message col" data-message-starred="{{$message->has_star}}">
             <!-- TODO: Make a component for the meta date element -->
             <div class="metadata my-2 d-flex justify-content-between align-items-center">
 
@@ -35,7 +50,21 @@
             </div>
             <!-- /.metadata -->
             <!-- TODO: Make a component for the entire message card -->
-            <div id="card-message-{{ $message->id }}" class="card border-0 shadow {{$message->status == 'sent' ? 'bg-primary' : 'bg-warning'}}">
+            <div id="card-message-{{ $message->id }}" class="card border-0 shadow {{$message->status == 'sent' ? 'bg-dark-subtle' : 'bg-light-subtle'}}">
+
+                @if ($message->is_issue)
+                <div class="card-header">
+
+                    <span>
+                        <strong>
+                            <i class="bi bi-github"></i>
+                            Issue Url:
+                        </strong>
+                        <a href="{{$message->issue_url}}" target="_blank" class=" text-bg-info-subtle">
+                            {{$message->issue_url}}</a>
+                    </span>
+                </div>
+                @endif
 
                 <div class="card-body" contenteditable="false">
                     {!! Str::of($message->body)->markdown() !!}
@@ -238,4 +267,5 @@
         </div>
         @endforelse
     </div>
+    <div class="py-4" x-on:click="filterMessages()">Only Starred messages</div>
 </div>
