@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class OpenAi
 {
-    private $timeout = 90;
+    private $timeout = 0;
     public function get_models()
     {
         #TODO: code...
