@@ -52,7 +52,26 @@
             <!-- TODO: Make a component for the entire message card -->
             <div id="card-message-{{ $message->id }}" class="card border-0 shadow {{$message->status == 'sent' ? 'bg-dark-subtle' : 'bg-light-subtle'}}">
 
-                @if ($message->is_issue)
+                @if($message->issues()->count() > 0)
+                    <div class="card-header d-flex align-items-end justify-content-between
+                    " x-data="{
+                        selected_issue:null
+                    }">
+                        <div class="form-group grow-1">
+                            <label for="issues_for_message_{{$message->id}}">Linked Issues</label>
+                            <select class="form-control" name="issues_for_message_{{$message->id}}" id="issues_for_message_{{$message->id}}" x-model="selected_issue">
+                                <option value="#">Select an issue</option>
+                                @foreach ($message->issues()->get() as $issue)
+                                    <option value="{{ $issue->url }}">
+                                        <b>{{ ucfirst($issue->provider) }}: </b>{{$issue->title}}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <a :href="selected_issue" class="btn btn-primary" target="_blank">Go</a>
+                    </div>
+                @endif
+                {{-- @if ($message->is_issue)
                 <div class="card-header">
 
                     <span>
@@ -64,7 +83,7 @@
                             {{$message->issue_url}}</a>
                     </span>
                 </div>
-                @endif
+                @endif --}}
 
                 <div class="card-body" contenteditable="false">
                     {!! Str::of($message->body)->markdown() !!}
