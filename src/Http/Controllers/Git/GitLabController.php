@@ -40,8 +40,8 @@ class GitLabController extends GitRemoteProvider
         if ($response->failed()) {
             $error = json_decode($response->body(), true);
             $message = $error['error'];
+            return $message;
         }
 
-        return $message;
     }
 }

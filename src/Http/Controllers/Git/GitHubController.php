@@ -44,8 +44,8 @@ class GitHubController extends GitRemoteProvider
         if ($response->failed()) {
             $error = json_decode($response->body(), true);
             $message = $error['message'];
+            return $message;
         }
 
-        return $message;
     }
 }
