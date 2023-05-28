@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Git;
 
+use App\Models\Issue;
 use App\Models\GitProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,6 +56,16 @@ class BitBucketController extends GitRemoteProvider
 
             return $message;
         }
+    }
+
+    public function handleIssueCreation($response, $message, $issueTitle){
+        $issue = new Issue();
+        $issue->url = str_replace('api.bitbucket.org/2.0/repositories/','bitbucket.org/',$response['links']['self']['href']);
+        $issue->provider = 'bitbucket';
+        $issue->title = $issueTitle;
+        $issue->message_id = $message->id;
+        $issue->save();
+        return $issue;
     }
 
     /**

@@ -139,12 +139,13 @@ abstract class GitRemoteProvider
         if there is an error then the response json should return an error instead of the whole response*/
         $response_body = json_decode($response->getBody(), true);
         //dd($response_body);
-        if (isset($response['html_url'])) {
-            $issue_url = $response_body['html_url'];
-            $message->is_issue = true;
-            $message->issue_url = $issue_url;
-            $message->save();
-        }
+        $this->handleIssueCreation($response, $message,$request->issue_summary);
+        // if (isset($response['html_url'])) {
+        //     $issue_url = $response_body['html_url'];
+        //     $message->is_issue = true;
+        //     $message->issue_url = $issue_url;
+        //     $message->save();
+        // }
 
         return response()->json([
             'success' => true,
@@ -180,6 +181,15 @@ abstract class GitRemoteProvider
      * @return array
      */
     abstract protected function handle_repositories_mapping($repositories);
+
+
+    /**
+     * Create the issue saving the link and the provvider
+     * @param Response $response
+     * @param Message $message
+     * @return Issue
+     */
+    abstract protected function handleIssueCreation($response, $message, $issueTitle);
 
     // Protected Methods
 
