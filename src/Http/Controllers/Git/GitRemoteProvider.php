@@ -191,7 +191,7 @@ abstract class GitRemoteProvider
      * @param  string  $refreshToken The refresh token for the Git provider
      * @return void
      */
-    protected function saveCredentials(string $provider, string $token, string $refreshToken): void
+    protected function saveCredentials(string $provider, string $token, string|null $refreshToken): void
     {
         $user = Auth::user();
         $providerCount = GitProvider::where('name', $provider)->where('user_id', $user->id)->count();
