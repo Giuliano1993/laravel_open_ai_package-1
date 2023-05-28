@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('issues', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('description');
             $table->enum('provider',['github','gitlab', 'bitbucket']);
             $table->string('url');
             $table->timestamps();
