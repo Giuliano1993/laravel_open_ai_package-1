@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Git;
 
+use App\Models\Issue;
+
 class GitLabController extends GitRemoteProvider
 {
     public function handleProviderIssuesResponse($client, $request, $issue_body)
@@ -43,5 +45,11 @@ class GitLabController extends GitRemoteProvider
             return $message;
         }
 
+    }
+
+    public function handleCreatedIssueUrl($response, &$issue){
+        $issue->url = $response['web_url'];
+        $issue->provider = 'gitlab';
+        return $issue;
     }
 }
