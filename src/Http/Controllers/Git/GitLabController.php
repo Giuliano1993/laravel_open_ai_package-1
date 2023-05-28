@@ -47,13 +47,9 @@ class GitLabController extends GitRemoteProvider
 
     }
 
-    public function handleIssueCreation($response, $message, $issueTitle){
-        $issue = new Issue();
+    public function handleCreatedIssueUrl($response, &$issue){
         $issue->url = $response['web_url'];
         $issue->provider = 'gitlab';
-        $issue->title = $issueTitle;
-        $issue->message_id = $message->id;
-        $issue->save();
         return $issue;
     }
 }

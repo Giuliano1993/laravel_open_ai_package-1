@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Git;
 
-use App\Models\GitProvider;
+use App\Models\Issue;
 use App\Models\Message;
-use Illuminate\Http\JsonResponse;
+use App\Models\GitProvider;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -98,7 +99,7 @@ abstract class GitRemoteProvider
         $repoUrl = $this->getProviderRepositoriesUrl($request);
 
         if (!$repoUrl) {
-            throw new Exception('Error Processing Request, missing Repositories URL', 1);
+            throw new \Exception('Error Processing Request, missing Repositories URL', 1);
         }
         //dd($repoUrl);
         // Send the request to the provider's API
@@ -139,13 +140,11 @@ abstract class GitRemoteProvider
         if there is an error then the response json should return an error instead of the whole response*/
         $response_body = json_decode($response->getBody(), true);
         //dd($response_body);
-        $this->handleIssueCreation($response, $message,$request->issue_summary);
-        // if (isset($response['html_url'])) {
-        //     $issue_url = $response_body['html_url'];
-        //     $message->is_issue = true;
-        //     $message->issue_url = $issue_url;
-        //     $message->save();
-        // }
+        $issue = new Issue();
+        $issue->title = $request->issue_summary;
+        $issue->message_id = $message->id;
+        $this->handleCreatedIssueUrl($response, $issue);
+        $issue->save();
 
         return response()->json([
             'success' => true,
@@ -184,12 +183,12 @@ abstract class GitRemoteProvider
 
 
     /**
-     * Create the issue saving the link and the provvider
+     * Handle the different url behaviour for the created issue
      * @param Response $response
-     * @param Message $message
+     * @param Issue $issue
      * @return Issue
      */
-    abstract protected function handleIssueCreation($response, $message, $issueTitle);
+    abstract protected function handleCreatedIssueUrl($response, &$issue);
 
     // Protected Methods
 
