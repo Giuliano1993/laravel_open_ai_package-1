@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Http;
 
 class OpenAi
 {
+ 
     private $timeout = 0;
 
+
+   
     public function get_models()
     {
         //TODO: code...
