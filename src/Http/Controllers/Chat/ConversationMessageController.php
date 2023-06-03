@@ -93,14 +93,7 @@ class ConversationMessageController extends Controller
             //dd($request['prompt'], $temperature ??= 0, $model ??= 'gpt-3.5-turbo', $max_tokens ??= 1500);
             $text = $ai->chat($request['prompt'], $temperature ??= 0, $model ??= 'gpt-3.5-turbo', $max_tokens ??= 1500);
 
-            $pattern = '/(?<=```\n)([^```]*)(?=\n```)/';
-            preg_match($pattern,$text, $matches);
-            return print_r($matches);
-            if(count($matches) > 0){
-                $language = $ai->detectProgrammingLanguage($matches[0]);
-                //return $language;
-                $text = str_replace("```\n", "```$language\n",$text);
-            }
+          
             Message::create([
                 'status' => 'received',
                 'body' => $text,
