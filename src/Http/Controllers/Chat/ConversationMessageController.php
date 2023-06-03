@@ -138,8 +138,8 @@ class ConversationMessageController extends Controller
         //dd($answer);
         //dd($conversation->id);
         // store the message response
-        $this->storeAiReplyMessage($conversation->id, $answer);
-        //dd('here');
+        $aiMessage = $this->storeAiReplyMessage($conversation->id, $answer);
+
         //Generates a conversation summary based on the sent message
         if ($conversation->messages->count() <= 2) {
             $conversation_messages = $conversation->messages->pluck('body')->join('');
@@ -149,7 +149,14 @@ class ConversationMessageController extends Controller
         // redirect back
         return response()->json([
             'success' => true,
-            'message' => $answer
+            'message' => Message::where('id', $aiMessage->id)->with(
+                [
+                    'issues',
+                    'conversation' => [
+                        'user:id,name'
+                    ]
+                ]
+            )->first(),
         ]);
     }
 
@@ -170,11 +177,13 @@ class ConversationMessageController extends Controller
         //dd($conversationId);
 
         //dd($conversationId, $body);
-        Message::create([
+        $message = Message::create([
             'body' => $body,
             'status' => 'received',
             'conversation_id' => $conversationId
         ]);
+        //dd($message);
+        return $message;
     }
     /**
      * Remove the specified resource from storage.
