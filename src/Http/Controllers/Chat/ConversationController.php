@@ -42,11 +42,26 @@ class ConversationController extends Controller
             ->take(6)->get();
         // dd($starredMessages);
         //$conversations = $user->conversations()->orderByDesc('id')->paginate(12);
-        $conversations = Conversation::where('user_id',$user->id);
-        if($request->search){
-            $conversations =  $conversations->where('summary','LIKE','%'.$request->search.'%');
+
+        $conversations = [];
+        $messages = [];
+        if(!$request->type || $request->type == "conversation"){
+            $conversations = Conversation::where('user_id',$user->id);
+            if($request->search){
+                $conversations =  $conversations->where('summary','LIKE','%'.$request->search.'%');
+            }
+            $conversations = $conversations->orderByDesc('id')->paginate(12);
+        }else{
+            $messages = Message::where('body','LIKE','%'.$request->search.'%')
+            ->whereIn('conversation_id', function ($query) use ($user) {
+                $query->select('id')
+                    ->from('conversations')
+                    ->where('user_id', $user->id); // Get all conversations that belong to the user
+            })->orderByDesc('id')->paginate(12);
         }
-        $conversations = $conversations->orderByDesc('id')->paginate(12);
+
+
+
         $sharedConversations = $user->sharedConversations()->orderByDesc('id')->paginate(12);
 
         //dd($conversations);
@@ -58,7 +73,7 @@ class ConversationController extends Controller
         })->get();
 
 
-        return view('admin.conversations.index', compact('conversations', 'starredMessages', 'sharedConversations','conversationsSharedWithOthers'));
+        return view('admin.conversations.index', compact('conversations', 'starredMessages', 'sharedConversations','conversationsSharedWithOthers','messages'));
 
     }
 
