@@ -38,7 +38,15 @@ class ConversationMessageController extends Controller
     public function index(Conversation $conversation): \Illuminate\Contracts\View\View | HttpException
     {
         if ($conversation->user_id === Auth::id() || $conversation->sharedWithUsers->contains(Auth::user())) {
-            $messages = $conversation->messages;
+            //$messages = $conversation->messages;
+            $messages = $conversation->messages()->with(
+                [
+                    'issues',
+                    'conversation' => [
+                        'user:id,name'
+                    ]
+                ]
+            )->get();
             //dd($messages);
 
             /* TODO: the component should have a default route where send posts requests */
