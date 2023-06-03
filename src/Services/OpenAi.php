@@ -4,14 +4,18 @@ namespace PacificDev\LaravelOpenAi\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OpenAi
 {
- 
+
     private $timeout = 0;
+    private $API_KEY;
+    public function __construct()
+    {
+        $this->API_KEY = config('openai.api_key');
+    }
 
-
-   
     public function get_models()
     {
         //TODO: code...
@@ -22,7 +26,7 @@ class OpenAi
         // TODO: code...
     }
 
-    public function chat($content, $temperature = 0, $model = 'gpt-3.5-turbo', $max_tokens = 2000)
+    public function old_chat($content, $temperature = 0, $model = 'gpt-3.5-turbo', $max_tokens = 2000)
     {
         //dd($content);
         //dd(config("openai.presets.chat.assistant"));
@@ -34,15 +38,17 @@ class OpenAi
             $messages = [...$preset, compact('role', 'content')];
         }
         //dd($messages);
-        $response = Http::withToken(config('openai.api_key'))->timeout($this->timeout)->post(
-            config('openai.endpoints.chat.completations'),
-            [
+
+        $data = [
+            'api_endpoint' => config('openai.endpoints.chat.completations'),
+            'payload' => [
                 'model' => $model,
                 'messages' => $messages,
                 'max_tokens' => $max_tokens,
                 'temperature' => $temperature,
             ]
-        );
+        ];
+        $response = $this->baseRequest($data);
 
         if ($response->successful()) {
             $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
@@ -60,6 +66,54 @@ class OpenAi
         }
     }
 
+
+    public function getAnswer($response): string | null
+    {
+        if ($response->successful()) {
+            $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
+            // return the response
+            return $answerText;
+        }
+        return null;
+    }
+
+    public function getFailureMessage($response)
+    {
+        if ($response->clientError()) {
+            return json_decode($response->body(), true)['error']['message'];
+        }
+        if ($response->serverError()) {
+            return json_decode($response->body(), true);
+        }
+        return 'unknown error while attempting to get an anwer';
+    }
+
+    public function chat(array $payload)
+    {
+
+        if (!is_array($payload) || !array_key_exists('messages', $payload) || !array_key_exists('model', $payload)) {
+            throw new Exception("Ops! 🤯 we made something wrong! The payload is required to call the chat method");
+        }
+
+        $data = [
+            'api_endpoint' => config('openai.endpoints.chat.completations'),
+            'payload' => $payload
+        ];
+
+        //dd($data);
+        return $this->baseRequest($data);
+    }
+
+    /**
+     * Sends a base HTTP request to the specified API endpoint with the provided data and API key.
+     *
+     * @param array $params An array containing the API endpoint, payload, and API key.
+     * @return mixed The response from the API endpoint.
+     */
+    private function baseRequest($params)
+    {
+        return Http::withToken($this->API_KEY)->timeout($this->timeout)->post($params['api_endpoint'], $params['payload']);
+    }
     /**
      * ### Makes requests to the Completation endpoint
      * Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
@@ -74,7 +128,7 @@ class OpenAi
         if (is_null($istructions)) {
             $istructions = config('openai.presets.completation');
         }
-        $full_prompt = $istructions.trim($user_prompt)."\n\nAI: ";
+        $full_prompt = $istructions . trim($user_prompt) . "\n\nAI: ";
         //dd($istructions, $user_prompt, $full_prompt, $model);
         try {
             $r = Http::withToken(config('openai.api_key'))->timeout($this->timeout)
