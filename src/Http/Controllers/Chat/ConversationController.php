@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Chat;
 
-use App\Http\Controllers\Controller;
-
 use App\Models\User;
-use App\Models\Conversation;
+
 use App\Models\Message;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+
 use App\Http\Requests\StoreConversationRequest;
 use App\Http\Requests\UpdateConversationRequest;
-
-use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
@@ -44,7 +45,17 @@ class ConversationController extends Controller
 
         $sharedConversations = $user->sharedConversations()->orderByDesc('id')->paginate(12);
 
-        return view('admin.conversations.index', compact('conversations', 'starredMessages', 'sharedConversations'));
+
+        $conversationsSharedWithOthers = Conversation::where('user_id',$user->id)
+        ->whereIn('id', function($query) use ($user){
+            $query->select('conversation_id')->from('conversations_users')->whereIn('conversation_id', function($query) use ($user){
+                $query->select('id')->from('conversations')->where('user_id', $user->id);
+            });
+        })->get();
+
+
+        return view('admin.conversations.index', compact('conversations', 'starredMessages', 'sharedConversations','conversationsSharedWithOthers'));
+
     }
 
     /**
@@ -88,7 +99,17 @@ class ConversationController extends Controller
 
     public function share(Conversation $conversation, Request $request): RedirectResponse
     {
+
+        //TODO refactor the checks
+        $loggedUser = Auth::user();
+        if($conversation->user_id != $loggedUser->id){
+            return redirect()->back()->with('message', "Impossible to share: the specified conversation does not belong to you.");
+        }
+
         $mail = $request->mail;
+
+        $writeAccess = $request->writeAccess;
+
         $user = User::firstWhere('email', $mail);
 
 
@@ -96,7 +117,12 @@ class ConversationController extends Controller
             return redirect()->back()->with('message', "Impossible to share: the user does not exists.");
         }
 
-        $conversation->sharedWithUsers()->attach($user);
+        $alreadyShared = $conversation->sharedWithUsers()->where('user_id',$user->id)->first();
+        if($alreadyShared){
+            return redirect()->back()->with('message', "Conversation already shared with this user");
+        }
+        $conversation->sharedWithUsers()->attach($user,['write_access'=>$writeAccess]);
+
         return redirect()->back()->with('message', "Shared with $mail.");
     }
 
@@ -104,5 +130,14 @@ class ConversationController extends Controller
     {
         $conversation->sharedWithUsers()->detach($user);
         return redirect()->back()->with('message', "User $user->email can no longer see this conversation.");
+    }
+
+    public function switchWriteAcess(Conversation $conversation, User $user): RedirectResponse
+    {
+        $sharedRow = $conversation->sharedWithUsers()->where('user_id',$user->id)->first()->pivot;
+        $canWrite = !$sharedRow->write_access;
+        $conversation->sharedWithUsers()->updateExistingPivot($user->id,['write_access'=>$canWrite]);
+        $message = $canWrite ? 'has now writing access.' : 'has no more write access.';
+        return redirect()->back()->with('message', "User $user->email ".$message);
     }
 }

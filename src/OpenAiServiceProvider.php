@@ -2,9 +2,9 @@
 
 namespace PacificDev\LaravelOpenAi;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\ServiceProvider;
 
 class OpenAiServiceProvider extends ServiceProvider
 {
@@ -25,7 +25,7 @@ class OpenAiServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // load views
-        $this->loadViewsFrom(__DIR__ . '/resources/views', 'pacificdev');
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'pacificdev');
         // load components
         $this->loadComponents();
         // Copy Routes
@@ -40,15 +40,13 @@ class OpenAiServiceProvider extends ServiceProvider
         $this->loadTests();
 
         // load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \PacificDev\LaravelOpenAi\Commands\Ai::class,
             ]);
         }
-
 
         // TODO:? publish vendor assets
 
@@ -68,42 +66,42 @@ class OpenAiServiceProvider extends ServiceProvider
         */
         $this->publishes([
             //__DIR__ . '/config/openai.php' => config_path('openai.php'),
-            __DIR__ . '/resources/views' => resource_path('views/vendor/pacificdev'),
+            __DIR__.'/resources/views' => resource_path('views/vendor/pacificdev'),
             //__DIR__ . '/assets/js/' => resource_path('js/'),
         ]);
     }
-
 
     // Helpers
     private function loadComponents()
     {
         Blade::componentNamespace('PacificDev\\LaravelOpenAi\\Views\\Components', 'pacificdev');
     }
+
     private function loadRoutes()
     {
-        if (!File::exists(base_path('routes/ai-endpoints.php'))) {
+        if (! File::exists(base_path('routes/ai-endpoints.php'))) {
             // Add the routes file
-            File::copy(__DIR__ . '/routes/ai-endpoints.php', base_path('routes/ai-endpoints.php'));
+            File::copy(__DIR__.'/routes/ai-endpoints.php', base_path('routes/ai-endpoints.php'));
 
             // Append at the end of the web.php file our ai-endpoints.php require __DIR__ . '/ai-endpoints.php'
             $web_php_file = 'routes/web.php';
             $this->append_to_file($web_php_file, "require __DIR__ . '/ai-endpoints.php';");
 
             // Append the OPEN_API_KEY to the .env file
-            $env_file_path =  '.env';
+            $env_file_path = '.env';
             $this->append_to_file($env_file_path, 'OPENAI_API_KEY=your_api_key_goes_here');
         }
 
-        if (!File::exists(base_path('routes/git-endpoints.php'))) {
+        if (! File::exists(base_path('routes/git-endpoints.php'))) {
             // Add the routes file
-            File::copy(__DIR__ . '/routes/git-endpoints.php', base_path('routes/git-endpoints.php'));
+            File::copy(__DIR__.'/routes/git-endpoints.php', base_path('routes/git-endpoints.php'));
 
             // Append at the end of the web.php file our git-endpoints.php require __DIR__ . '/git-endpoints.php'
             $web_php_file = 'routes/web.php';
             $this->append_to_file($web_php_file, "require __DIR__ . '/git-endpoints.php';");
 
             // Append the OPEN_API_KEY to the .env file
-            $env_file_path =  '.env';
+            $env_file_path = '.env';
             $this->append_to_file($env_file_path, 'BITBUCKET_KEY=BIT_BUCKET_KEY_HERE');
             $this->append_to_file($env_file_path, 'BITBUCKET_SECRET=SECRET_HERE');
         }
@@ -111,30 +109,36 @@ class OpenAiServiceProvider extends ServiceProvider
 
     private function loadModels()
     {
-        File::copy(__DIR__ . '/Models/Conversation.php', base_path('app/Models/Conversation.php'));
-        File::copy(__DIR__ . '/Models/GitProvider.php', base_path('app/Models/GitProvider.php'));
-        File::copy(__DIR__ . '/Models/Message.php', base_path('app/Models/Message.php'));
-        File::copy(__DIR__ . '/Models/User.php', base_path('app/Models/User.php'));
+        File::copy(__DIR__.'/Models/Conversation.php', base_path('app/Models/Conversation.php'));
+        File::copy(__DIR__.'/Models/GitProvider.php', base_path('app/Models/GitProvider.php'));
+        File::copy(__DIR__.'/Models/Message.php', base_path('app/Models/Message.php'));
+        File::copy(__DIR__.'/Models/User.php', base_path('app/Models/User.php'));
     }
 
     private function loadControllers()
     {
-
         // Copy controllers
-        File::copy(__DIR__ . '/Http/Controllers/Chat/ConversationController.php', base_path('app/Http/Controllers/Chat/ConversationController.php'));
-        File::copy(__DIR__ . '/Http/Controllers/Chat/ConversationMessageController.php', base_path('app/Http/Controllers/Chat/ConversationMessageController.php'));
-        File::copy(__DIR__ . '/Http/Controllers/Git/GitController.php', base_path('app/Http/Controllers/Git/GitController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Chat/ConversationController.php', base_path('app/Http/Controllers/Chat/ConversationController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Chat/ConversationMessageController.php', base_path('app/Http/Controllers/Chat/ConversationMessageController.php'));
+
+        /* Git Features Controllers */
+        //File::copy(__DIR__.'/Http/Controllers/Git/GitController.php', base_path('app/Http/Controllers/Git/GitController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Git/GitHubController.php', base_path('app/Http/Controllers/Git/GitHubController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Git/GitLabController.php', base_path('app/Http/Controllers/Git/GitLabController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Git/BitBucketController.php', base_path('app/Http/Controllers/Git/BitBucketController.php'));
+        File::copy(__DIR__.'/Http/Controllers/Git/GitRemoteProvider.php', base_path('app/Http/Controllers/Git/GitRemoteProvider.php'));
     }
 
     private function loadFormRequests()
     {
-        File::copy(__DIR__ . '/Http/Requests/StoreMessageRequest.php', base_path('app/Http/Requests/StoreMessageRequest.php'));
-        File::copy(__DIR__ . '/Http/Requests/UpdateConversationRequest.php', base_path('app/Http/Requests/UpdateConversationRequest.php'));
+        File::copy(__DIR__.'/Http/Requests/StoreMessageRequest.php', base_path('app/Http/Requests/StoreMessageRequest.php'));
+        File::copy(__DIR__.'/Http/Requests/UpdateConversationRequest.php', base_path('app/Http/Requests/UpdateConversationRequest.php'));
     }
 
     private function loadTests()
     {
-        File::copy(__DIR__ . '/tests/Feature/Chat/ConversationsTest.php', base_path('tests/Feature/Chat/ConversationsTest.php'));
+        File::copy(__DIR__.'/tests/Feature/Chat/ConversationsTest.php', base_path('tests/Feature/Chat/ConversationsTest.php'));
+        File::copy(__DIR__.'/tests/Feature/Commands/AssistantCommandTest.php', base_path('tests/Feature/Commands/AssistantCommandTest.php'));
     }
 
     private function append_to_file($file, string $contents)

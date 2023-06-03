@@ -1,39 +1,117 @@
-<div class="conversation p-2">
+<div class="conversation p-2" x-data="{
+    onlyStarred: false,
+    filterMessages(){
+
+        this.onlyStarred = !this.onlyStarred;
+        const messages = document.querySelectorAll('.message');
+        messages.forEach(message => {
+
+            if (message.getAttribute('data-message-starred') == 0 && this.onlyStarred){
+                message.style.display = 'none'
+            } else {
+                message.style.display = 'block'
+            }
+        })
+
+    }}">
     <!-- TODO: Copy this content back in the package files and refactor with multiple components or partials -->
     <div class="row flex-column g-4">
         @forelse( $messages as $message)
-        <div class="col">
+        <div class="message col" data-message-starred="{{$message->has_star}}">
             <!-- TODO: Make a component for the meta date element -->
-            <div class="meta text-center mb-1">
-                <div class="date fs_sm text-muted">
-                    {{ \Carbon\Carbon::parse($message->created_at)->diffForHumans() }}
+            <div class="metadata my-2 d-flex justify-content-between align-items-center">
+
+                <!-- TODO: Make a component for the message author details -->
+                <div class="metadata_user message_data text-white">
+                    @if($message->status == 'sent')
+                    <div class="avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
+                            <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                            <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z" />
+                        </svg>
+                        <span class="username text-capitalize d-none d-sm-inline-block">{{$message->conversation->user->name}}</span>
+                    </div>
+                    @else
+                    <div class="ai">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-robot" viewBox="0 0 16 16">
+                            <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z" />
+                            <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z" />
+                        </svg>
+                        <span class="text-capitalize d-none d-sm-inline-block">Ai-assistant</span>
+                    </div>
+                    @endif
+                </div>
+                <!-- /.message_data -->
+                <div class="metadata_date text-center mb-1">
+                    <div class="date fs_sm text-muted">
+                        {{ \Carbon\Carbon::parse($message->created_at)->diffForHumans() }}
+                    </div>
                 </div>
             </div>
-            <!-- /.meta -->
+            <!-- /.metadata -->
             <!-- TODO: Make a component for the entire message card -->
-            <div id="card-message-{{ $message->id }}" class="card shadow {{$message->status == 'sent' ? 'bg-secondary' : 'bg-primary border-dark'}}">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <!-- TODO: Make a component for the message author details -->
-                    <div class="message_data">
-                        @if($message->status == 'sent')
-                        <div class="avatar">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-badge" viewBox="0 0 16 16">
-                                <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-                                <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z" />
-                            </svg>
-                            <span class="username text-capitalize d-none d-sm-inline-block">{{$message->conversation->user->name}}</span>
+            <div id="card-message-{{ $message->id }}" class="card border-0 shadow {{$message->status == 'sent' ? 'bg-dark-subtle' : 'bg-light-subtle'}}">
+
+                @if($message->issues()->count() > 0)
+                    <div class="card-header d-flex align-items-end justify-content-between
+                    " x-data="{
+                        selected_issue:null
+                    }">
+                        <div class="form-group grow-1">
+                            <label for="issues_for_message_{{$message->id}}">Linked Issues</label>
+                            <select class="form-control" name="issues_for_message_{{$message->id}}" id="issues_for_message_{{$message->id}}" x-model="selected_issue">
+                                <option value="#">Select an issue</option>
+                                @foreach ($message->issues()->get() as $issue)
+                                    <option value="{{ $issue->url }}">
+                                        <b>{{ ucfirst($issue->provider) }}: </b>{{$issue->title}}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        @else
-                        <div class="ai">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-robot" viewBox="0 0 16 16">
-                                <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a24.767 24.767 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z" />
-                                <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z" />
-                            </svg>
-                            <span class="text-capitalize d-none d-sm-inline-block">Ai-assistant</span>
-                        </div>
-                        @endif
+                        <a :href="selected_issue" class="btn btn-primary" target="_blank">Go</a>
                     </div>
-                    <!-- /.message_data -->
+                @endif
+                {{-- @if ($message->is_issue)
+                <div class="card-header">
+
+                    <span>
+                        <strong>
+                            <i class="bi bi-github"></i>
+                            Issue Url:
+                        </strong>
+                        <a href="{{$message->issue_url}}" target="_blank" class=" text-bg-info-subtle">
+                            {{$message->issue_url}}</a>
+                    </span>
+                </div>
+                @endif --}}
+
+                <div class="card-body" contenteditable="false">
+                    {!! Str::of($message->body)->markdown() !!}
+                </div>
+
+                <div class="card-footer text-muted d-flex justify-content-between align-items-center" x-data="star_message({{$message->has_star}}, {{$message->id}}, {{$message->conversation_id}})">
+                    <!-- TODO: Make a component for the star  -->
+                    <button type="submit" form="star-message-{{$message->id}}" class="star-button btn btn-outline-light border-0" data-message-id="{{ $message->id }}" @click.prevent="starMessage(conversationId, messageId)">
+
+                        <template x-if="starred">
+
+                            <div class="star text-warning">
+                                <svg xmlns=" http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                </svg>
+                            </div>
+                        </template>
+
+                        <template x-if="!starred">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                                <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
+                            </svg>
+                        </template>
+
+                    </button>
+                    <!-- /.star -->
+
+
                     <!-- TODO: Make a component for the toolbar -->
                     <div class="btn-toolbar justify-content-end" role="toolbar" aria-label="Toolbar">
                         <div class="btn-group" role="group" aria-label="Button Group">
@@ -102,6 +180,10 @@
                                             <span x-text="selected_repo"></span>
                                         </small>
                                         <small class="text-danger" x-show="!selected_repo">Select a repository from the list</small>
+                                    </div>
+                                    <div class="alert alert-info" role="alert" x-show="issue_error_message">
+                                        <strong>Ops!</strong>
+                                        <span x-text="issue_error_message"></span>
                                     </div>
                                     <div class="mb-3">
                                         <label class="text-white" for="issue">Issue description</label>
@@ -191,33 +273,7 @@
                     </div>
                     <!-- /.toolbar -->
 
-                </div>
 
-                <div class="card-body" contenteditable="false">
-                    {!! Str::of($message->body)->markdown() !!}
-                </div>
-
-                <div class="card-footer text-muted d-flex justify-content-between" x-data="star_message({{$message->has_star}}, {{$message->id}}, {{$message->conversation_id}})">
-                    <!-- TODO: Make a component for the star  -->
-                    <button type="submit" form="star-message-{{$message->id}}" class="star-button btn btn-outline-light border-0" data-message-id="{{ $message->id }}" @click.prevent="starMessage(conversationId, messageId)">
-
-                        <template x-if="starred">
-
-                            <div class="star text-warning">
-                                <svg xmlns=" http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
-                                </svg>
-                            </div>
-                        </template>
-
-                        <template x-if="!starred">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
-                                <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z" />
-                            </svg>
-                        </template>
-
-                    </button>
-                    <!-- /.star -->
                 </div>
 
             </div>
@@ -230,4 +286,5 @@
         </div>
         @endforelse
     </div>
+    <div class="py-4" x-on:click="filterMessages()">Only Starred messages</div>
 </div>
