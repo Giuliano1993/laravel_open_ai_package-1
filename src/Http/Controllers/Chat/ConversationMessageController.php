@@ -107,7 +107,6 @@ class ConversationMessageController extends Controller
                     $pos = strpos($text, "```\n");
                     if($pos) $text = substr_replace($text, "```$language\n", $pos, strlen("```\n"));
                 }
-                
             }
             Message::create([
                 'status' => 'received',
@@ -136,5 +135,16 @@ class ConversationMessageController extends Controller
     public function destroy(Message $message)
     {
         //
+    }
+
+    public function generateIssueTitle(Conversation $conversation, Message $message, OpenAi $ai){
+
+        $prompt = "Given a text, containing some text and some code, write a github issue title that fits and describe the text content.\n
+        Response format: answer with the issue title only, without prepending 'issue title'\n
+        The text follows: \n";
+
+        $title = $ai->text_complete($prompt,$message->body);
+        return response()->json(['title' => $title]);
+    
     }
 }

@@ -198,6 +198,10 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="text-white" for="issue">Issue description</label>
+                                        <span class="btn btn-sm text-muted text-white" @click="generateIssueName({{$conversation->id}}, {{$message->id}})">
+                                            <span class="fs_sm">Generate</span>
+                                        </span>
+
                                         <input name="issue" id="issue" type="text" class="form-control" placeholder="Issue name here" x-model="issue_title">
                                     </div>
 
