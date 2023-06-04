@@ -93,7 +93,22 @@ class ConversationMessageController extends Controller
             //dd($request['prompt'], $temperature ??= 0, $model ??= 'gpt-3.5-turbo', $max_tokens ??= 1500);
             $text = $ai->chat($request['prompt'], $temperature ??= 0, $model ??= 'gpt-3.5-turbo', $max_tokens ??= 1500);
 
-          
+            //RegEx pattern to check if codeblock does not specify the language
+            $pattern = '/(?<=```\n)([^```]*)(?=\n```)/';
+            preg_match($pattern,$text, $matches);
+            //if we find this pattern we make a targeted request to GPT to detect the language used
+            // and append it at the beginning of the code block, to allow to show it in the front end
+            if(count($matches) > 0){
+                $prompt = "What programming language is this?\n
+                Answer format: answer with the name of the language only.\n
+                The code is the following:\n";
+                $language = $ai->text_complete($prompt,$matches[0]);
+                if(str_word_count($language,0) == 1){
+                    $pos = strpos($text, "```\n");
+                    if($pos) $text = substr_replace($text, "```$language\n", $pos, strlen("```\n"));
+                }
+                
+            }
             Message::create([
                 'status' => 'received',
                 'body' => $text,
