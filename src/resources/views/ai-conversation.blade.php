@@ -197,10 +197,12 @@
                                         <span x-text="issue_error_message"></span>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="text-white" for="issue">Issue description</label>
-                                        <span class="btn btn-sm text-muted text-white" @click="generateIssueName({{$conversation->id}}, {{$message->id}})">
-                                            <span class="fs_sm">Generate</span>
-                                        </span>
+                                        <label class="text-white d-flex justify-content-between mb-2" for="issue">Issue description
+
+                                            <span class="btn btn-sm text-muted text-white" @click="generateIssueName({{$message->conversation->id}}, {{$message->id}})">
+                                                <span class="fs_sm text-uppercase">Generate Issue Name</span>
+                                            </span>
+                                        </label>
 
                                         <input name="issue" id="issue" type="text" class="form-control" placeholder="Issue name here" x-model="issue_title">
                                     </div>
