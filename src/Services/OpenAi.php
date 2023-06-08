@@ -11,6 +11,7 @@ class OpenAi
 
     private $timeout = 0;
     private $API_KEY;
+    private $GPT_MODEL = 'gpt-3.5-turbo';
     public function __construct()
     {
         $this->API_KEY = config('openai.api_key');
@@ -67,32 +68,15 @@ class OpenAi
     }
 
 
-    public function getAnswer($response): string | null
-    {
-        if ($response->successful()) {
-            $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
-            // return the response
-            return $answerText;
-        }
-        return null;
-    }
 
-    public function getFailureMessage($response)
-    {
-        if ($response->clientError()) {
-            return json_decode($response->body(), true)['error']['message'];
-        }
-        if ($response->serverError()) {
-            return json_decode($response->body(), true);
-        }
-        return 'unknown error while attempting to get an anwer';
-    }
 
     public function chat(array $payload)
     {
-
-        if (!is_array($payload) || !array_key_exists('messages', $payload) || !array_key_exists('model', $payload)) {
-            throw new Exception("Ops! 🤯 we made something wrong! The payload is required to call the chat method");
+        if (!array_key_exists('model', $payload)) {
+            $payload['model'] = $this->GPT_MODEL;
+        }
+        if (!is_array($payload) || !array_key_exists('messages', $payload)) {
+            throw new Exception("Ops! 🤯 something wrong happend! The payload is required to call the chat method");
         }
 
         $data = [
@@ -104,16 +88,7 @@ class OpenAi
         return $this->baseRequest($data);
     }
 
-    /**
-     * Sends a base HTTP request to the specified API endpoint with the provided data and API key.
-     *
-     * @param array $params An array containing the API endpoint, payload, and API key.
-     * @return mixed The response from the API endpoint.
-     */
-    private function baseRequest($params)
-    {
-        return Http::withToken($this->API_KEY)->timeout($this->timeout)->post($params['api_endpoint'], $params['payload']);
-    }
+
     /**
      * ### Makes requests to the Completation endpoint
      * Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
@@ -131,18 +106,17 @@ class OpenAi
         $full_prompt = $istructions . trim($user_prompt) . "\n\nAI: ";
         //dd($istructions, $user_prompt, $full_prompt, $model);
         try {
-            $r = Http::withToken(config('openai.api_key'))->timeout($this->timeout)
-                ->post(
-                    config('openai.endpoints.completation'),
-                    [
-                        'prompt' => $full_prompt,
-                        'model' => $model,
-                        'max_tokens' => $max_tokens,
-                        'temperature' => $temperature,
-                        'echo' => false,
-                        'stop' => ["\nMe: ", "\nAI: "],
-                    ]
-                );
+            $r = $this->baseRequest([
+                'api_endpoint' => config('openai.endpoints.completation'),
+                'payload' => [
+                    'prompt' => $full_prompt,
+                    'model' => $model,
+                    'max_tokens' => $max_tokens,
+                    'temperature' => $temperature,
+                    'echo' => false,
+                    'stop' => ["\nMe: ", "\nAI: "],
+                ]
+            ]);
 
             /* TODO: Need to manage the error better. When inserting an incorrect api key the core returns the stack trace referring to the choices key being null. */
             if ($r->successful()) {
@@ -228,4 +202,38 @@ class OpenAi
      * API reference: https://beta.openai.com/docs/api-reference/images/create-variation
      * Guide: https://beta.openai.com/docs/guides/images
      */
+
+
+    public function getAnswer($response): string | null
+    {
+        if ($response->successful()) {
+            $answerText = json_decode($response->body(), true)['choices'][0]['message']['content'];
+            // return the response
+            return $answerText;
+        }
+        return null;
+    }
+
+    public function getFailureMessage($response)
+    {
+        if ($response->clientError()) {
+            return json_decode($response->body(), true)['error']['message'];
+        }
+        if ($response->serverError()) {
+            return json_decode($response->body(), true);
+        }
+        //return json_decode($response->body(), true);
+        return null;
+    }
+
+    /**
+     * Sends a base HTTP request to the specified API endpoint with the provided data and API key.
+     *
+     * @param array $params An array containing the API endpoint, payload, and API key.
+     * @return mixed The response from the API endpoint.
+     */
+    private function baseRequest($params)
+    {
+        return Http::withToken($this->API_KEY)->timeout($this->timeout)->post($params['api_endpoint'], $params['payload']);
+    }
 }
