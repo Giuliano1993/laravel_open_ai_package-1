@@ -13,7 +13,18 @@
             }
         })
 
-    }}">
+    }}"
+    x-init="
+    elementToScroll = document.getElementById(window.location.hash?.replace('#', ''));
+    setTimeout(()=>{
+        window.scrollTo({
+            top: elementToScroll.offsetTop - 10,
+            behavior: 'smooth'
+          });
+    },1000)
+    "
+    >
+    <!-- TODO: find if alpine offers a better way to way for everything to be loaded in the page before doing something ( scrolling to a certain point in the page in this case ) -->
     <!-- TODO: Copy this content back in the package files and refactor with multiple components or partials -->
     <div class="row flex-column g-4">
         @forelse( $messages as $message)
@@ -186,7 +197,13 @@
                                         <span x-text="issue_error_message"></span>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="text-white" for="issue">Issue description</label>
+                                        <label class="text-white d-flex justify-content-between mb-2" for="issue">Issue description
+
+                                            <span class="btn btn-sm text-muted text-white" @click="generateIssueName({{$message->conversation->id}}, {{$message->id}})">
+                                                <span class="fs_sm text-uppercase">Generate Issue Name</span>
+                                            </span>
+                                        </label>
+
                                         <input name="issue" id="issue" type="text" class="form-control" placeholder="Issue name here" x-model="issue_title">
                                     </div>
 

@@ -21,4 +21,5 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::post('/conversations/{conversation}/switchAccess/{user}', [ConversationController::class, 'switchWriteAcess'])->name('conversations.switchWriteAcess'); //x
     Route::delete('/conversations/{conversation}/unshare/{user}', [ConversationController::class, 'unshare'])->name('conversations.unshare'); //x
     Route::patch('/conversations/{conversation}/messages/{message}/star', [ConversationMessageController::class, 'star'])->name('messages.star'); //x
+    Route::post('/conversations/{conversation}/messages/{message}/issue-title', [ConversationMessageController::class, 'generateIssueTitle'])->name('messages.issueTitle');
 });

@@ -122,7 +122,7 @@
              </div>
              <div class="offcanvas-body">
                  <div>
-                     Click the button to upload the content of a file into the propmt and let gpt help you.
+                     Click the button to upload the content of a file into the prompt and let gpt help you.
                      <input class="form-control" type="file" @change="handleFileUpload($event)">
                  </div>
              </div>
